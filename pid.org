@@ -1,0 +1,108 @@
+* PID Controllers
+
+* Basics
+#+BEGIN_SRC c
+static void update(struct state *state, time_t now)
+{
+    time_t dt = now - state->last_update;
+
+    double spend_target = state->spend_target;
+    double spend_rate = state->spend_rate;
+
+    double error = spend_target - spend_rate;
+    double integral = state->integral +  error * dt;
+    double derivative = (error - state->prev_error) / dt;
+
+    static const double Kp = 1.0;
+    static const double Ki = 1.0;
+    static const double Kd = 1.0;
+    state->probability = Kp * error + Ki * state->integral + Kd * derivative;
+
+    state->integral = integral;
+    state->prev_error = error;
+    state->last_update = now;
+}
+#+END_SRC
+
+* Standard Form
+#+BEGIN_SRC c
+static void update(struct state *state, time_t now)
+{
+    time_t dt = now - state->last_update;
+
+    double spend_target = state->spend_target;
+    double spend_rate = state->spend_rate;
+
+    double error = spend_target - spend_rate;
+    double integral = state->integral +  error * dt;
+    double derivative = (error - state->prev_error) / dt;
+
+    static const double Kp = 0.0001; //// Scaled
+    static const double Ti = 1.0;    //// = Ki / Kp
+    static const double Td = 1.0;    //// = Kd / Kp
+    state->probability = Kp * (error + Ti * state->integral + Td * derivative);
+
+    state->integral = integral;
+    state->prev_error = error;
+    state->last_update = now;
+}
+#+END_SRC
+
+* Freeze Integral on Overflow
+#+BEGIN_SRC c
+static void update(struct state *state, time_t now)
+{
+    time_t dt = now - state->last_update;
+
+    double spend_target = state->spend_target;
+    double spend_rate = state->spend_rate;
+
+    double error = spend_target - spend_rate;
+    double integral = state->integral +  error * dt;
+    double derivative = (error - state->prev_error) / dt;
+
+    static const double Kp = 0.0001;
+    static const double Ti = 1.0;
+    static const double Td = 1.0;
+    state->probability = Kp * (error + Ti * state->integral + Td * derivative);
+
+    if (state->probability > 1.0) state->probability = 1.0;
+    else if (state->probability < 0.0) state->probability = 0.0;
+    else {
+        state->integral = integral;
+        state->prev_error = error;
+    }
+
+    state->last_update = now;
+}
+#+END_SRC
+
+* Uniform Scaling
+#+BEGIN_SRC c
+static void update(struct state *state, time_t now)
+{
+    time_t dt = now - state->last_update;
+
+    double divisor = d->total_balance / (d->end_time - d->start_time);
+    double spend_target = state->spend_target / divisor;
+    double spend_rate = state->spend_rate / divisor;
+
+    double error = spend_target - spend_rate;
+    double integral = state->integral +  error * dt;
+    double derivative = (error - state->prev_error) / dt;
+
+    static const double Kp = 0.0001;
+    static const double Ti = 1.0;
+    static const double Td = 1.0;
+    state->probability = Kp * (error + Ti * state->integral + Td * derivative);
+
+    if (state->probability > 1.0) state->probability = 1.0;
+    else if (state->probability < 0.0) state->probability = 0.0;
+    else {
+        state->integral = integral;
+        state->prev_error = error;
+    }
+
+    state->last_update = now;
+}
+#+END_SRC
