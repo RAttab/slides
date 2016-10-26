@@ -1,0 +1,173 @@
+* Pessimal Algorithms and Simplexity Analysis
+
+* RCU
+
+- Lockfree Intro
+
+- Intuition
+
+- Kernel Implementations
+
+- Userland Implementations
+
+* Lockfree Intro
+
+#+BEGIN_SRC c
+struct s { uint64_t x, y; } *var = ...;
+
+{
+    lock(&mutex);
+
+    var->x++;
+    var->y--;
+
+    unlock(&mutex);
+}
+
+#+END_SRC
+
+* Compare-and-set
+#+BEGIN_SRC c
+bool compare_and_set(*var, old, new)
+{
+    if (*var != old) return false;
+    *var = new;
+    return true;
+}
+#+END_SRC
+
+* CAS Loop
+#+BEGIN_SRC c
+struct s { uint64_t x, y; } *var = ...;
+
+struct s *old = NULL, *new = NULL;
+do {
+    old = var;
+    new = copy(old);
+
+    new->x++;
+    new->y--;
+
+} while (!compare_and_set(&var, old, new));
+#+END_SRC
+
+* CAS Loop - C11 compliant
+#+BEGIN_SRC c
+struct s { uint64_t x, y; };
+atomic_uint64_t var;
+
+struct s *new = NULL;
+struct s *old = atomic_load_explicit(&var, memory_order_acquire);
+
+do {
+   if (!new) new = malloc(sizeof(*new));
+   *new = *old;
+
+    new->x++;
+    new->y--;
+
+} while (!atomic_compare_exchange_strong_explicit(&var, &old, new, memory_order_release));
+#+END_SRC
+
+* Memory Barriers
+#+BEGIN_SRC c
+while (!compare_and_set(&lock, 0, 1));
+
+var->x++;
+var->y--;
+
+lock = 0;
+#+END_SRC
+
+* Memory Barriers - Fixed
+#+BEGIN_SRC c
+while (!atomic_compare_exchange_strong_explicit(&lock, 0, 1, memory_order_acquire));
+
+var->x++;
+var->y--;
+
+atomic_store_explicit(&lock, 0, memory_order_release);
+#+END_SRC
+
+* Cache Coherence Protocols
+
+M: Modified
+E: Exclusive
+S: Shared
+I: Invalid
+
+* RCU - Intuition
+
+See White Board
+
+* RCU - Basic Interface
+#+BEGIN_SRC c
+void reader(struct s *var)
+{
+    uint64_t sum = 0;
+
+    {
+        rcu_begin();
+
+        sum = var->x + var->y;
+
+        rcu_end();
+    }
+
+    return sum;
+}
+
+void writer(struct s **var)
+{
+    struct s *old = *var;
+    struct s *new = copy(old);
+
+    new->x++;
+    new->y--;
+
+    *var = new;
+
+    rcu_synchronize();
+
+    free(old);
+}
+#+END_SRC
+
+* Alternatives?
+
+- Garbage Collector?
+
+- Ref Counting?
+
+* RCU - Kernel Implementation
+
+- Non-premptable Kernel
+
+- Counters
+
+- Linux implementation
+
+* RCU - Userland Implementation
+
+- Global counter
+
+- Thread-local counters
+
+- Dirty signal trick
+
+* Reference
+
+- Pessimal Algorithms and Simplexity Analysis
+
+- Read-Copy Update: Using Execution History to Solve Concurrency Problems
+
+- User-Level Implementations of Read-Copy Update
+
+- Memory Barriers: a Hardware View for Software Hackers
+
+- Kernel implementations:
+  - Linux classic: include/linux/rcupdate.h, kernel/rcu/update.c
+
+- Userlang implementations:
+  - liburcu.org
+  - concurrencykit.org - ck_epoch
