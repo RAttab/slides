@@ -1,0 +1,384 @@
+* Functional Programming in C++ ...
+
+* Functional Programming in C++ ...
+                             ... At Compile-Time
+
+* Remember kids...
+
+#+BEGIN_QUOTE
+Always code as if the guy who ends up maintaining your code will be a violent
+psychopath who knows where you live.
+
+                                                        -- John Woods
+#+END_QUOTE
+
+* What the...?
+
+#+BEGIN_SRC c++
+template<long N>
+struct Fib
+{
+    static constexpr long value = Fib<N-1>::value + Fib<N-2>::value;
+};
+
+template<> struct Fib<2> { static constexpr long value = 1; };
+template<> struct Fib<1> { static constexpr long value = 1; };
+template<> struct Fib<0> { static constexpr long value = 0; };
+
+constexpr long a = Fib<10>::value;
+constexpr long b = Fib<50>::value;
+#+END_SRC
+
+* Where's my code?
+
+#+BEGIN_SRC asm
+0000000000400470 0000003c <main>:
+  400470:	sub    $0x8,%rsp
+  400474:	mov    $0x37,%edx
+  400479:	mov    $0x400634,%esi
+  40047e:	mov    $0x1,%edi
+  400483:	xor    %eax,%eax
+  400485:	callq  400460 <__printf_chk@plt>
+  40048a:	movabs $0x2ee333961,%rdx
+  400494:	mov    $0x400643,%esi
+  400499:	mov    $0x1,%edi
+  40049e:	xor    %eax,%eax
+  4004a0:	callq  400460 <__printf_chk@plt>
+  4004a5:	xor    %eax,%eax
+  4004a7:	add    $0x8,%rsp
+  4004ab:	retq
+#+END_SRC
+
+* Basics: constexpr I
+
+#+BEGIN_SRC c++
+constexpr int a = 10;
+constexpr int b = a + 5;
+#+END_SRC
+
+* Basics: constexpr II
+
+#+BEGIN_SRC c++
+constexpr int a = 10;
+
+constexpr int fn(int a, int b) { return a * b; }
+constexpr int c = fn(a, 20);
+#+END_SRC
+
+* Basics: constexpr III
+
+#+BEGIN_SRC c++
+int d = 10;
+constexpr int e = d + 10;
+
+// ERROR:
+
+constexpr.cpp:16:30: error: the value of ‘d’ is not usable in a constant expression
+ constexpr int e = d + 10;
+                   ^
+constexpr.cpp:15:5: note: ‘int d’ is not const
+ int d = 10;
+#+END_SRC
+
+* Basics: typedef I
+
+#+BEGIN_SRC c++
+typedef int A;
+A a = 10;
+
+typedef A B;
+B b = 20;
+#+END_SRC
+
+* Basics: typedef II
+
+#+BEGIN_SRC c++
+struct Struct
+{
+    typedef int type;
+};
+
+constexpr Struct::type s = 30;
+#+END_SRC
+
+* Basics: template I
+
+#+BEGIN_SRC c++
+template<typename T>
+struct Type
+{
+    typedef T type;
+};
+
+constexpr Type<int>::type a = 10;
+#+END_SRC
+
+* Basics: template II
+
+#+BEGIN_SRC c++
+template<int V>
+struct Value
+{
+    static constexpr int value = V;
+};
+
+constexpr int b = Value<20>::value;
+#+END_SRC
+
+* Basics: template III
+
+#+BEGIN_SRC c++
+template<typename Type, Type Value>
+struct Something
+{
+    static constexpr Type value = Value;
+};
+
+constexpr int c = Something<int, 30>::value;
+#+END_SRC
+
+* Baby Steps I - Meta-Function
+
+#+BEGIN_SRC c++
+template<int A, int B>
+struct Sum
+{
+    static constexpr int value = A + B;
+};
+
+constexpr int sum = Sum<10, Sum<20, 30>::value>::value;
+#+END_SRC
+
+* Baby Steps II - Meta-Variable
+
+#+BEGIN_SRC c++
+constexpr long Kp = 1000;
+constexpr long Ki = 1000;
+constexpr long Kd = 10;
+
+struct Nil
+{
+    static constexpr long error = 0;
+    static constexpr long integral = 0;
+    static constexpr long value = 0;
+};
+
+template<typename Prev, long Target, long Value, long Delta = 1>
+struct Pid
+{
+    static constexpr long error = Target - Value;
+    static constexpr long integral = Prev::integral + error * Delta;
+    static constexpr long derivative = (error - Prev::error) / Delta;
+
+    static constexpr long value = Kp * error + Ki * integral + Kd * derivative;
+};
+
+constexpr long result = Pid<Nil, 100, 0>::value;
+#+END_SRC
+
+* Baby Steps III - Meta-Loops...?
+
+#+BEGIN_SRC c++
+template<long Value> struct Transition { /* ... */ };
+
+template<int N, typename State, long Target>
+struct Loop
+{
+    typedef Pid<State, Target, Transition<State::value>::value> step;
+
+    static constexpr long value = Loop<N - 1, step, Target>::value;
+};
+#+END_SRC
+
+* Baby Steps IV - Template Specialization
+
+#+BEGIN_SRC c++
+template<int N, typename State, long Target>
+struct Loop
+{
+    typedef Pid<State, Target, Transition<State::value>::value> step;
+
+    static constexpr long value = Loop<N - 1, step, Target>::value;
+};
+
+template<typename State, long Target>
+struct Loop<0, State, Target>
+{
+    static constexpr long value = Transition<State::value>::value;
+};
+
+constexpr long result = Loop<128, Nil, 1000000>::value;
+#+END_SRC
+
+* Constants as types
+#+BEGIN_SRC c++
+template<typename Type, Type Value>
+struct Constant
+{
+    static constexpr Type value = Value;
+};
+
+typedef Constant<int, 10> type;
+#+END_SRC
+
+* Tuple I
+
+#+BEGIN_SRC c++
+template<typename... Types> struct Tuple;
+
+struct A; struct B; struct C;
+typedef Tuple<A, int, B, C> tuple;
+#+END_SRC
+
+* Tuple II - Destructuring
+
+#+BEGIN_SRC c++
+template<typename Tuple>
+struct Test
+{
+    static constexpr bool value = false;
+};
+
+template<typename X, typename Y, typename Z>
+struct test< Tuple<X, int, Y, Z> >
+{
+    static constexpr bool value = true;
+};
+
+constexpr bool passed = Test<Tuple<A, int, B, C> >::value;
+constexpr bool failed = Test<Tuple<A, B, int, C> >::value;
+#+END_SRC
+
+* Tuple III - Get
+
+#+BEGIN_SRC c++
+template<int N, typename Tuple> struct Get {};
+
+template<typename Head, typename... Rest>
+struct Get<0, Tuple<Head, Rest...> >
+{
+    typedef Head type;
+};
+
+template<int N, typename Head, typename... Rest>
+struct Get<N, Tuple<Head, Rest...> >
+{
+    typedef typename Get<N - 1, Tuple<Rest...> >::type type;
+};
+
+Get<1, Tuple<A, int, B, C> >::type get = 10;
+#+END_SRC
+
+* List I - cons
+
+#+BEGIN_SRC c++
+struct Nil;
+
+template<typename X, typename Y> struct Cons;
+
+
+typedef Cons<Constant<int, 10>,
+            Cons<Constant<int, 20>,
+                Cons<Constant<int, 30>, Nil> > > list;
+#+END_SRC
+
+* List II - car
+
+#+BEGIN_SRC c++
+template<typename Cons> struct Car;
+
+template<typename X, typename Y>
+struct Car<Cons<X, Y> >
+{
+    typedef X type;
+};
+
+typedef typename Car<list>::type type;
+#+END_SRC
+
+* List III - cdr
+
+#+BEGIN_SRC c++
+template<typename Cons> struct Cdr;
+
+template<typename X, typename Y>
+struct Cdr<Cons<X, Y> >
+{
+    typedef Y type;
+};
+
+typedef typename Cdr<list>::type type;
+#+END_SRC
+
+* List IV - Print
+
+#+BEGIN_SRC c++
+template<typename Cons>
+struct Print
+{
+    static void print()
+    {
+        printf("(%d, ", Car<Cons>::type::value);
+        Print<typename Cdr<Cons>::type>::print();
+        printf(")");
+    }
+};
+
+template<>
+struct Print<Nil>
+{
+    static void print() { printf("nil"); }
+};
+
+Print<list>::print();
+#+END_SRC
+
+* How far can we go?
+
+Boost MPL:
+http://www.boost.org/doc/libs/1_57_0/libs/mpl/doc/index.html
+
+Supler-Template Tetris:
+https://blog.mattbierner.com/stupid-template-tricks-super-template-tetris/
+
+... too far ...
+
+* Evaluation Model
+
+- Modern compilers have caches expanded types
+- Memoization for free!
+
+* Compile-Time
+
+#+BEGIN_SRC c++
+template<long N>
+struct Fib_A
+{
+    static constexpr long value = Fib<N-1>::value + Fib<N-2>::value;
+};
+
+
+template<long N>
+struct FibFn
+{
+    static long step()
+    {
+        return FibFn<N - 1>::step() + FibFn<N - 2>::step();
+    }
+};
+#+END_SRC
+
+* SFINAE
+
+- Substitution Failure Is Not An Error
+- Provides conditional pattern matching
+
+* Conclusion
+
+- DON'T use this in a real system!
+  - Remember the violent psychopath...
+
+- BUT think of template meta-programming as a functional language!
+  - Encapsulate complicated logic in meta-functions
+  - Breakup long statements into meta-variables
+
