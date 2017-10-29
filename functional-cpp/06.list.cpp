@@ -66,12 +66,47 @@ struct Print<Nil>
     static void print() { printf("nil"); }
 };
 
+
+// IV
+
+template<int Factor>
+struct Mul
+{
+    template<typename Value>
+    auto apply(Value*) -> Constant<int, Value::value * Factor> {}
+};
+
+template<typename Fn, typename Arg>
+struct Apply
+{
+    typedef decltype(((Fn *) nullptr)->apply((Arg *) nullptr)) type;
+};
+
+template<typename Fn, typename List>
+struct Map
+{
+    typedef Cons<
+        typename Apply<Fn, typename Car<List>::type>::type,
+        typename Map<Fn, typename Cdr<List>::type>::type> type;
+};
+
+template<typename Fn>
+struct Map<Fn, Nil>
+{
+    typedef Nil type;
+};
+
 }
 
 int main(int, const char**)
 {
-    printf("list = ");
+    printf("list.print = ");
     Print<list>::print();
     printf("\n");
+
+    printf("list.mul = ");
+    Print<typename Map<Mul<20>, list>::type>::print();
+    printf("\n");
+
     return 0;
 }

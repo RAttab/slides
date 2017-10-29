@@ -349,6 +349,39 @@ struct Print<Nil>
 Print<list>::print(); // (10, (20, (30, nil)))
 #+END_SRC
 
+* List IV - Map...?!
+
+#+BEGIN_SRC c++
+template<int Factor>
+struct Mul
+{
+    template<typename Value>
+    auto apply(Value*) -> Constant<int, Value::value * Factor> {}
+};
+
+template<typename Fn, typename Arg>
+struct Apply
+{
+    typedef decltype(((Fn *) nullptr)->apply((Arg *) nullptr)) type;
+};
+
+template<typename Fn, typename List>
+struct Map
+{
+    typedef Cons<
+        typename Apply<Fn, typename Car<List>::type>::type,
+        typename Map<Fn, typename Cdr<List>::type>::type> type;
+};
+
+template<typename Fn>
+struct Map<Fn, Nil>
+{
+    typedef Nil type;
+};
+
+Print<typename Map<Mul<20>, list>::type>::print(); // (200, (400, (600, nil)))
+#+END_SRC
+
 * How far can we go?
 
 Boost MPL:
