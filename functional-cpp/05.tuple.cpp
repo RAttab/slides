@@ -9,31 +9,40 @@
 
 namespace {
 
+template<typename Type, Type Value>
+struct Constant
+{
+    static constexpr Type value = Value;
+};
+
 
 // I
 
 template<typename... Types> struct Tuple;
 
-struct A; struct B; struct C;
-typedef Tuple<A, int, B, C> tuple;
+struct Alice;
+typedef Tuple<Alice, Constant<int, 10> > alice;
+
+struct Bob;
+typedef Tuple<Bob, Constant<bool, true>, Constant<long, 200> > bob;
 
 
 // II
 
 template<typename Tuple>
-struct Test
+struct IsBob
 {
     static constexpr bool value = false;
 };
 
-template<typename X, typename Y, typename Z>
-struct Test< Tuple<X, int, Y, Z> >
+template<typename... Rest>
+struct IsBob< Tuple<Bob, Rest...> >
 {
     static constexpr bool value = true;
 };
 
-constexpr bool passed = Test<Tuple<A, int, B, C> >::value;
-constexpr bool failed = Test<Tuple<A, long, B, C> >::value;
+static constexpr bool alice_is_bob = IsBob<alice>::value;
+static constexpr bool bob_is_bob = IsBob<bob>::value;
 
 
 // III
@@ -52,26 +61,14 @@ struct Get<N, Tuple<Head, Rest...> >
     typedef typename Get<N - 1, Tuple<Rest...> >::type type;
 };
 
-Get<1, Tuple<A, int, B, C> >::type get = 10;
-
-
-// IV
-
-template<typename Type, Type Value>
-struct Constant
-{
-    static constexpr Type value = Value;
-};
-
-constexpr int constant = Get<1, Tuple<long, Constant<int, 20> > >::type::value;
+static constexpr long get = Get<2, bob>::type::value;
 
 }
 
 int main(int, const char**)
 {
-    printf("tuple.test.pass = %d\n", passed);
-    printf("tuple.test.fail = %d\n", failed);
-    printf("tuple.get.1 = %d\n", get);
-    printf("tuple.constant = %d\n", constant);
+    printf("tuple.isbob.alice = %d\n", alice_is_bob);
+    printf("tuple.isbob.bob = %d\n", bob_is_bob);
+    printf("tuple.get.2 = %ld\n", get);
     return 0;
 }

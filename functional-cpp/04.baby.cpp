@@ -33,6 +33,12 @@ struct Nil
     static constexpr long value = 0;
 };
 
+template<long Value>
+struct Transition
+{
+    static constexpr long value = Value / 1723;
+};
+
 template<typename Prev, long Target, long Value, long Delta = 1>
 struct Pid
 {
@@ -43,16 +49,10 @@ struct Pid
     static constexpr long value = Kp * error + Ki * integral + Kd * derivative;
 };
 
-constexpr long pid = Pid<Nil, 100, 0>::value;
+constexpr long pid_value = Transition<Pid<Nil, 100, 0>::value>::value;
 
 
 // III - IV
-
-template<long Value>
-struct Transition
-{
-    static constexpr long value = Value / 1723;
-};
 
 template<int N, typename State, long Target>
 struct Loop
@@ -77,9 +77,8 @@ struct Loop<0, State, Target>
 int main(int, const char**)
 {
     printf("baby.sum = %d\n", sum);
-    printf("baby.pid = %ld\n", pid);
+    printf("baby.pid = %ld\n", pid_value);
 
-    printf("baby.pid.Loop<  1, 1000000> = %ld\n", Loop<1, Nil, 1000000>::value);
     printf("baby.pid.Loop<  2, 1000000> = %ld\n", Loop<2, Nil, 1000000>::value);
     printf("baby.pid.Loop<  4, 1000000> = %ld\n", Loop<4, Nil, 1000000>::value);
     printf("baby.pid.Loop<  8, 1000000> = %ld\n", Loop<8, Nil, 1000000>::value);

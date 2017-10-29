@@ -17,7 +17,6 @@ struct Fib
 
 template<> struct Fib<2> { static constexpr long value = 1; };
 template<> struct Fib<1> { static constexpr long value = 1; };
-template<> struct Fib<0> { static constexpr long value = 0; };
 
 
 template<long N>

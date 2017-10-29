@@ -14,14 +14,10 @@ constexpr int a = 10;
 constexpr int b = a + 5;
 
 // II
-constexpr int fn(int a, int b) { return a * b; }
-constexpr int c = fn(a, 20);
-
-// III
 #if 0 
 
-int d = 30;
-constexpr int e = d + 40;
+int c = 30;
+constexpr int d = d + 40;
 
 #endif
 
@@ -31,6 +27,5 @@ int main(int, const char**)
 {
     printf("constexpr.a = %d\n", a);
     printf("constexpr.b = %d\n", b);
-    printf("constexpr.c = %d\n", c);
     return 0;
 }

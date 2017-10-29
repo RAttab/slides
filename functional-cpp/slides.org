@@ -23,10 +23,9 @@ struct Fib
 
 template<> struct Fib<2> { static constexpr long value = 1; };
 template<> struct Fib<1> { static constexpr long value = 1; };
-template<> struct Fib<0> { static constexpr long value = 0; };
 
-constexpr long a = Fib<10>::value;
-constexpr long b = Fib<50>::value;
+printf("fib.10 = %ld\n", Fib<10>::value);
+printf("fib.50 = %ld\n", Fib<50>::value);
 #+END_SRC
 
 * Where's my code?
@@ -59,25 +58,16 @@ constexpr int b = a + 5;
 * Basics: constexpr II
 
 #+BEGIN_SRC c++
-constexpr int a = 10;
-
-constexpr int fn(int a, int b) { return a * b; }
-constexpr int c = fn(a, 20);
-#+END_SRC
-
-* Basics: constexpr III
-
-#+BEGIN_SRC c++
-int d = 10;
-constexpr int e = d + 10;
+int c = 10;
+constexpr int d = d + 10;
 
 // ERROR:
 
-constexpr.cpp:16:30: error: the value of ‘d’ is not usable in a constant expression
- constexpr int e = d + 10;
+constexpr.cpp:16:30: error: the value of ‘c’ is not usable in a constant expression
+ constexpr int d = c + 10;
                    ^
-constexpr.cpp:15:5: note: ‘int d’ is not const
- int d = 10;
+constexpr.cpp:15:5: note: ‘int c’ is not const
+ int c = 10;
 #+END_SRC
 
 * Basics: typedef I
@@ -163,6 +153,8 @@ struct Nil
     static constexpr long value = 0;
 };
 
+template<long Value> struct Transition { /* ... */ };
+
 template<typename Prev, long Target, long Value, long Delta = 1>
 struct Pid
 {
@@ -173,14 +165,12 @@ struct Pid
     static constexpr long value = Kp * error + Ki * integral + Kd * derivative;
 };
 
-constexpr long result = Pid<Nil, 100, 0>::value;
+constexpr long value = Transition<Pid<Nil, 100, 0>::value>::value;
 #+END_SRC
 
 * Baby Steps III - Meta-Loops...?
 
 #+BEGIN_SRC c++
-template<long Value> struct Transition { /* ... */ };
-
 template<int N, typename State, long Target>
 struct Loop
 {
@@ -210,7 +200,30 @@ struct Loop<0, State, Target>
 constexpr long result = Loop<128, Nil, 1000000>::value;
 #+END_SRC
 
-* Constants as types
+* Baby Steps V - Results!
+
+#+BEGIN_SRC c++
+Loop<  2, Nil, 1000000> = 380264
+Loop<  4, Nil, 1000000> = 597568
+Loop<  8, Nil, 1000000> = 811032
+Loop< 16, Nil, 1000000> = 948211
+Loop< 32, Nil, 1000000> = 995325
+Loop< 64, Nil, 1000000> = 999959
+Loop<128, Nil, 1000000> = 999998
+#+END_SRC
+
+* Constants as types I
+
+#+BEGIN_SRC c++
+template<typename Type> struct Type {};
+typedef Type<10> A; // ERROR
+
+template<int Value> struct Int {};
+typedef Int<int> B; // ERROR
+#+END_SRC
+
+* Constants as types II
+
 #+BEGIN_SRC c++
 template<typename Type, Type Value>
 struct Constant
@@ -226,27 +239,30 @@ typedef Constant<int, 10> type;
 #+BEGIN_SRC c++
 template<typename... Types> struct Tuple;
 
-struct A; struct B; struct C;
-typedef Tuple<A, int, B, C> tuple;
+struct Alice;
+typedef Tuple<Alice, Constant<int, 10> > alice;
+
+struct Bob;
+typedef Tuple<Bob, Constant<bool, true>, Constant<long, 200> > bob;
 #+END_SRC
 
 * Tuple II - Destructuring
 
 #+BEGIN_SRC c++
 template<typename Tuple>
-struct Test
+struct IsBob
 {
     static constexpr bool value = false;
 };
 
-template<typename X, typename Y, typename Z>
-struct test< Tuple<X, int, Y, Z> >
+template<typename... Rest>
+struct IsBob< Tuple<Bob, Rest...> >
 {
     static constexpr bool value = true;
 };
 
-constexpr bool passed = Test<Tuple<A, int, B, C> >::value;
-constexpr bool failed = Test<Tuple<A, B, int, C> >::value;
+static constexpr bool alice_is_bob = IsBob<alice>::value; // false
+static constexpr bool bob_is_bob = IsBob<bob>::value;     // true
 #+END_SRC
 
 * Tuple III - Get
@@ -266,7 +282,7 @@ struct Get<N, Tuple<Head, Rest...> >
     typedef typename Get<N - 1, Tuple<Rest...> >::type type;
 };
 
-Get<1, Tuple<A, int, B, C> >::type get = 10;
+static constexpr long value = Get<2, bob>::type::value;
 #+END_SRC
 
 * List I - cons
@@ -330,7 +346,7 @@ struct Print<Nil>
     static void print() { printf("nil"); }
 };
 
-Print<list>::print();
+Print<list>::print(); // (10, (20, (30, nil)))
 #+END_SRC
 
 * How far can we go?
@@ -338,7 +354,7 @@ Print<list>::print();
 Boost MPL:
 http://www.boost.org/doc/libs/1_57_0/libs/mpl/doc/index.html
 
-Supler-Template Tetris:
+Super-Template Tetris:
 https://blog.mattbierner.com/stupid-template-tricks-super-template-tetris/
 
 ... too far ...
@@ -381,4 +397,3 @@ struct FibFn
 - BUT think of template meta-programming as a functional language!
   - Encapsulate complicated logic in meta-functions
   - Breakup long statements into meta-variables
-
