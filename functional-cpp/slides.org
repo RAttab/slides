@@ -392,6 +392,17 @@ https://blog.mattbierner.com/stupid-template-tricks-super-template-tetris/
 
 ... too far ...
 
+* I/O
+
+- Output:
+  - printf is technically cheating. We need to run the executable!
+  - #error but that's before template expansion
+  - Through error message but it gets convoluted.
+
+- Input:
+  - Files
+  - code injection via vulnerability... I guess?
+
 * Evaluation Model
 
 - Modern compilers have caches expanded types
@@ -421,6 +432,7 @@ struct FibFn
 
 - Substitution Failure Is Not An Error
 - Provides conditional pattern matching
+- Useful to test types for properties
 
 * Conclusion
 
