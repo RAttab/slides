@@ -22,15 +22,18 @@ constexpr int sum = Sum<10, Sum<20, 30>::value>::value;
 
 // II
 
-constexpr long Kp = 1000;
-constexpr long Ki = 1000;
-constexpr long Kd = 10;
-
-struct Nil
+template<typename Prev, long Target, long Value, long Delta = 1>
+struct Pid
 {
-    static constexpr long error = 0;
-    static constexpr long integral = 0;
-    static constexpr long value = 0;
+    static constexpr long error = Target - Value;
+    static constexpr long integral = Prev::integral + error * Delta;
+    static constexpr long derivative = (error - Prev::error) / Delta;
+
+    static constexpr long Kp = 1000;
+    static constexpr long Ki = 1000;
+    static constexpr long Kd = 10;
+
+    static constexpr long value = Kp * error + Ki * integral + Kd * derivative;
 };
 
 template<long Value>
@@ -39,14 +42,11 @@ struct Transition
     static constexpr long value = Value / 1723;
 };
 
-template<typename Prev, long Target, long Value, long Delta = 1>
-struct Pid
+struct Nil
 {
-    static constexpr long error = Target - Value;
-    static constexpr long integral = Prev::integral + error * Delta;
-    static constexpr long derivative = (error - Prev::error) / Delta;
-
-    static constexpr long value = Kp * error + Ki * integral + Kd * derivative;
+    static constexpr long error = 0;
+    static constexpr long integral = 0;
+    static constexpr long value = 0;
 };
 
 constexpr long pid_value = Transition<Pid<Nil, 100, 0>::value>::value;
