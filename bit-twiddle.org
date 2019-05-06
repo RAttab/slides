@@ -1,0 +1,44 @@
+* Bit Twiddling Hacks
+* Bit Twiddling Engineering
+* Pop Count
+
+#+BEGIN_SRC c
+size_t pop(uint32_t x) {
+    x = (x & 0x55555555) + ((x >>  1) & 0x55555555)
+    x = (x & 0x33333333) + ((x >>  2) & 0x33333333)
+    x = (x & 0x0F0F0F0F) + ((x >>  4) & 0x0F0F0F0F)
+    x = (x & 0x00FF00FF) + ((x >>  8) & 0x00FF00FF)
+    x = (x & 0x0000FFFF) + ((x >> 16) & 0x0000FFFF)
+    return x;
+}
+#+END_SRC
+
+* Number Leading Zeroes
+
+#+BEGIN_SRC c
+size_t nlz(uint32_t x) {
+    x = x | (x >> 1);
+    x = x | (x >> 2);
+    x = x | (x >> 4);
+    x = x | (x >> 8);
+    x = x | (x >> 16);
+
+    return pop(~x);
+}
+#+END_SRC
+
+* Number Trailing Zeroes
+
+#+BEGIN_SRC c
+size_t ntz(uint32_t x) {
+
+    x = x & ~x;
+    return
+        (x ? 0 : 1) +
+        ((x & 0x0000FFFF) ? 0 : 16) +
+        ((x & 0x00FF00FF) ? 0 : 8) +
+        ((x & 0x0F0F0F0F) ? 0 : 4) +
+        ((x & 0x33333333) ? 0 : 2) +
+        ((x & 0x55555555) ? 0 : 1);
+}
+#+END_SRC
