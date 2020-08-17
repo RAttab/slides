@@ -10,7 +10,7 @@ This is a development environment where only the paranoid can survive.
 I assume you know the basics of C.
 
 This talk is not exhaustive because there's tons of little fun things that are
-hard to fit in a talk. 
+hard to fit in a talk.
 
 Also, if you use them, you're literally Satan and are either a cool person or an
 extreme violator of the psychopath rule.
@@ -71,14 +71,6 @@ This is what I target.
 
 The gap between what you can do and what you're allowed to do.
 
-* Undefined Behaviour - Simple Example
-
-#+BEGIN_SRC c
-int a = INT_MAX + 1;
-#+END_SRC
-
-* Undefined Behaviour - What can go wrong?
-
 Usually manifests during optimization.
 
 Compiler assumes that something is not possible and makes optimization decisions
@@ -86,14 +78,18 @@ as a result.
 
 * Undefined Behaviour - Linux Example
 
-Famous Linux example...
+Famous Linux Kernel example...
 
 #+BEGIN_SRC c
-void blah(int *ptr)
+int blah(int *ptr)
 {
-   int x = *ptr + 5;        // accessing ptr would be undefined behaviour if NULL
-   if (ptr == NULL) return; // therefore this `if` is a noop and can be removed.
-   bleh(x);                 // calling blah(NULL) is now no longer safe. Whee!
+   int x = *ptr;            // accessing ptr would be undefined behaviour if NULL
+                            // therefore ptr can't be NULL
+
+   if (ptr == NULL) return; // we just proved that ptr can't be NULL
+                            // therefore this `if` is a noop and can be removed.
+
+   return *ptr + 5;         // kaboom boom
 }
 #+END_SRC
 
@@ -134,6 +130,50 @@ Different compilers or architecture may choose differently.
 Much more rare and usually has to do with data or memory layout.
 
 Example: struct padding
+
+* Initialization
+
+Single most common source of undefined behaviour:
+
+#+BEGIN_SRC c
+int a;
+int b = a;
+#+END_SRC
+
+Trying to access unitialized memory is undefined behaviour.
+
+* Initialization - what about the heap?
+
+Also applies to heap allocations:
+
+#+BEGIN_SRC c
+int *a = malloc(sizeof(*a));
+int b = *a;
+#+END_SRC
+
+malloc doesn't initialize memory so this is also undefined behaviour.
+
+I recommend the use of calloc to initialize everything to 0.
+
+* Initialization - safety nets
+
+This is something that compilers can catch sometimes.
+
+clang-tidy can also catch some instances statically.
+
+valgrind can catch some of these dynamically.
+
+valgrind can't catch problems in code paths not executed.
+
+* Initialization - Lesson
+
+Just initialize everything.
+
+Even when it's obviously safe.
+
+There's no way for you to know how the code will evolve.
+
+Just be safe by default.
 
 * Ints
 
@@ -208,7 +248,7 @@ This is my default and what you want 90% of the time.
 #include <stdint.h>
 
 uint8_t a = UINT8_MAX;
-int16_fast16_t b = INT16_FAST_MAX;
+int16_fast_t b = INT16_FAST_MAX;
 #+END_SRC
 
 Allows you to better declare your exact requirements from the int and have
@@ -240,7 +280,7 @@ uint8_t x;
 
 They're equivalent but the later has a stronger semantic meaning.
 
-Questions about why not void points are differed to later.
+Questions about why not void* are differed to later.
 
 * Ints - Who knew negative numbers could be so evil
 
@@ -317,7 +357,7 @@ const char a[] = {'b', 'o', 'b', 0};
 
 That 0 at the end is the source of so much woe and misery in the world.
 
-* Strings - str, the dysfunctional family 
+* Strings - str, the dysfunctional family
 
 All these functions assumes that you have a trailing 0.
 
@@ -328,13 +368,15 @@ strcmp(s1, s2);
 strcpy(dst, src);
 strcat(dst, src);
 strtok(str, delim); // uses global state ?!
+sprintf(str, format, ...);
+vsprintf(src, format, args);
 #+END_SRC
 
 If it's missing? It'll just keep reading memory until it finds one. Or else...
 
 * Strings - Security!
 
-What's that? Your string is on the stack? 
+What's that? Your string is on the stack?
 
 It would be a shame if someone were to write a very specific number in your
 return address for your function...
@@ -347,7 +389,7 @@ structures that you'll only find out way after the str function finishes...
 
 * Strings - strn, the slightly ok family
 
-I **ALWAYS** default to the strn family
+**ALWAYS** default to the strn family
 
 #+BEGIN_SRC c
 strnlen(str, len);
@@ -355,6 +397,8 @@ strndup(str, len);        // don't forget to call free...
 strncmp(s1, s2, len);
 strncpy(dst, src, len);
 strncat(dst, src, len);
+snprintf(str, len, format, ...);
+vsnprintf(src, len, format, args);
 #+END_SRC
 
 strn variants ensure that no more then len bytes will be read.
@@ -399,11 +443,11 @@ _r means that the function is reentrant.
 
 You know you fucked up when you have to specify that for a string function.
 
-saveptr is the state the be used in between calls.
+saveptr is the state that is used in between calls.
 
 * Strings - Paranoia is not paranoia when it's justified
 
-The standard library for C is insane and out to get you.
+The C standard library is insane and out to get you.
 
 Period. No questions. That's just the reality.
 
@@ -416,6 +460,218 @@ Just to be sure...
 
 * Arrays - Let's play with bytes
 
+The humble array:
+
+#+BEGIN_SRC c
+size_t array[5] = {0};
+#+END_SRC
+
+* Arrays - Brackets vs Pointers
+
+The line is blurry because array implicitly cast to pointers.
+
+#+BEGIN_SRC c
+size_t arr[5];
+
+size_t x = arr[1];
+size_t y = *(arr + 1);
+#+END_SRC
+
+Both lines do the same thing because C will implicitely cast arr to a pointer.
+At which point pointer arithmetic takes over.
+
+And lo, much confusion was spread throughout the kingdom. Hooray!
+
+In practice, FOR UNIDIMENTIONAL ARRAYS, you can use either.
+
+* Arrays - Where do they live?
+
+#+BEGIN_SRC c
+static size_t arr[5];
+#+END_SRC
+
+When declared outside of a function they live in special pre-allocated segments
+of memory. Read up on linkers if you're really bored.
+
+#+BEGIN_SRC c
+void foo(void)
+{
+    size_t arr[5];
+}
+#+END_SRC
+
+When delcared in a function, they live on the stack.
+
+* Arrays - Wait-a-minute...
+
+C stacks are usually 2Mb and there are no safety nets so...
+
+#+BEGIN_SRC c
+size_t arr[1ULL << 48];
+#+END_SRC
+
+Who wants an alternative addressing system based on the arbitrary location of
+your function stack pointer? I do!
+
+Although you're most likely to get an angry compiler or a face full of
+segfaults.
+
+* Arrays - What about dynamic sizes?
+
+I you want to be all fancy and have dynamic sizes
+
+#+BEGIN_SRC c
+void bob(size_t len)
+{
+    size_t *arr = alloca(10 * sizeof(*arr));
+}
+#+END_SRC
+
+alloca actually just increments the stack pointer and then returns it.
+
+alloca also doesn't initialize the memory so you gotta do that yourself.
+
+Calling free on this pointer result in hilarity...
+
+For me...
+
+Watching you suffer...
+
+* Arrays - Surely we have better?
+
+Why yes title! C11 deprecated alloca in favour of
+
+#+BEGIN_SRC c
+void bob(size_t len)
+{
+    size_t arr[len] = {0};
+}
+#+END_SRC
+
+Such Clean. Much Wow.
+
+* Arrays - How about the heap?
+
+For heap allocations
+
+#+BEGIN_SRC c
+size_t *arr = calloc(10, sizeof(*arr));
+#+END_SRC
+
+That's one pointer you do want to free.
+
+There's a few more things going on here but I have a whole section on pointers
+so be patient.
+
+* Arrays - So what about this bound checking thing?
+
+Arrays are just as vulnerable as strings to bounds check problems
+
+No nil byte shenanigans here so people tend to pass sizes around much more.
+
+* Arrays - Function Parameters
+
+#+BEGIN_SRC c
+void bob(size_t *arr, size_t len);
+
+size_t arr[10];
+bob(arr, sizeof(arr) / sizeof(*arr));
+#+END_SRC
+
+Every array parameter should be paired with a length parameter.
+
+That length parameter should also be checked religiously.
+
+Do it always as a defense in depth mechanism.
+
+Never leave home without your tin foil hat.
+
+* Arrays - Speaking of functions
+
+#+BEGIN_SRC c
+memset(ptr, byte, len);
+memcmp(s1, s2, len);
+memcpy(dst, src, len);
+memmove(dst, src, len);
+#+END_SRC
+
+These are all surprisingly sane and work as expected.
+
+A true novelty for C standard libraries.
+
+In fact, I don't trust it...
+
+Something must be wrong...
+
+* Arrays - memmove vs memcpy
+
+Turns out there's one catch...
+
+memcpy: dst and src may NOT overlap
+memmove: dst and src may overlap
+
+There are performance implications before of this.
+
+Generally you'll use memcpy even if it's not safe by default.
+
+99.9% of your use case won't deal with overlapping memory.
+
+* Arrays - While we're at it...
+
+The actual declaration for memset is
+
+#+BEGIN_SRC c
+void *memset(void *s, int c, size_t n);
+#+END_SRC
+
+See where int is the type of the second parameter?
+
+Only the least-significant 8 bits will be read and used.
+
+Even the man page calls it a byte... but it's an int...
+
+Why? 
+
+Because. Now stop asking questions that make sense.
+
+* Arrays - What about Multi-Dimentions?!
+
+What about them...
+
+* Arrays - I want to use them?!
+
+urg... why...?
+
+* Arrays - MATH!
+
+FINE!
+
+* Arrays - Sweet sweet victory
+
+They're an all around pain to use.
+
+I would probably need another 10 slides to go over them.
+
+Instead I decided to have a fun dialogue with myself in front of 20 people.
+
+Reality is that for systems programming, I never use them.
+
+As a result I don't have as much experience or opinions about them.
+
+And that's where we'll leave it at.
+
+* Pointers -
+const fun happy time
+cast away const because... ya know
+void * casting implicit
+aliasing
+memcpy vs memmove
+strict aliasing
+type punning
+
+* Malloc -
+
+
 #+END_SRC
 
 * Reference
@@ -423,4 +679,3 @@ Just to be sure...
 [1]: https://blog.regehr.org/archives/1393
 [2]: https://www.usenix.org/system/files/1311_05-08_mickens.pdf
 [3]: https://en.cppreference.com/w/cpp/language/types
-
