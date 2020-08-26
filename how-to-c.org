@@ -445,6 +445,8 @@ You know you fucked up when you have to specify that for a string function.
 
 saveptr is the state that is used in between calls.
 
+* Strings - TODO int conversion functions
+
 * Strings - Paranoia is not paranoia when it's justified
 
 The C standard library is insane and out to get you.
@@ -630,7 +632,7 @@ Only the least-significant 8 bits will be read and used.
 
 Even the man page calls it a byte... but it's an int...
 
-Why? 
+Why?
 
 Because. Now stop asking questions that make sense.
 
@@ -660,14 +662,244 @@ As a result I don't have as much experience or opinions about them.
 
 And that's where we'll leave it at.
 
-* Pointers -
-const fun happy time
-cast away const because... ya know
-void * casting implicit
-aliasing
-memcpy vs memmove
-strict aliasing
-type punning
+* Pointers - the FUN part of C
+Access the raw pointers is one of the main and best reasons to use C.
+
+It's also the easiest way to foot-gun yourself.
+
+* Pointers - Memory Casting
+#+BEGIN_SRC c
+void * mem = mmap(NULL, len, prot, flags, fd, 0);
+assert(mem != MAP_FAILED);
+
+struct header *hdr = mem;
+hdr->...
+#+END_SRC
+
+C allows you take to determine what the type of random pieces of memory are.
+
+Quite handy when manipulating files, IPC mechanisms, network packets, etc.
+
+WARNING: struct layouts are implmentation defined so use with care.
+There are ways around that using compiler instrinsict
+
+* Pointers - Pointer Arithmetic
+
+#+BEGIN_SRC c
+void * mem = something();
+((uint64_t *) mem) + 2;
+((struct bob *) mem) + 3;
+#+END_SRC
+
+Is equivalent to:
+
+#+BEGIN_SRC c
+void * mem = something();
+(uint64_t *) (((uintptr_t) mem) + (sizeof(uint64_t) * 2));
+(struct bob *) (((uintptr_t) mem) + (sizeof(struct bob) * 3));
+#+END_SRC
+
+* Pointers - Surprise quiz!
+#+BEGIN_SRC c
+void *mem = something();
+mem + 1;
+#+END_SRC
+
+What does that do?
+
+* Pointers - Hint
+Boils down to what does this return:
+
+#+BEGIN_SRC c
+sizeof(void);
+#+END_SRC
+
+* Pointers - Answer...
+
+Standard says that void doesn't have a size
+So arithmetic on void pointers is undefined behaviour...
+
+* Pointers - lulz jk
+
+It's so common in practice that gcc and friends all do the following:x
+
+#+BEGIN_SRC c
+sizeof(void) = 1;
+#+END_SRC
+
+It's usually used to index raw binary data so this behaviour makes sense.
+
+* Pointers - Personal Preference
+
+I personally always use uint8_t to refer to binary data
+
+#+BEGIN_SRC c
+void *mem = something();
+((uint8_t *)mem) + 0xb0b;
+#+END_SRC
+
+void pointers are used in a great many different context
+I prefer to make it explicit when working with binary data
+
+* Pointers - void pointers
+
+Speaking of which, casting to and from void pointers is implicit.
+
+#+BEGIN_SRC c
+size_t* mem = (size_t *) calloc(1, sizeof(*mem));
+#+END_SRC
+
+That cast is a waste of everybody's time and a easy way to introduce errors.
+
+This works just fine and clearer and more concise:
+
+#+BEGIN_SRC c
+size_t* mem = calloc(1, sizeof(*mem));
+#+END_SRC
+
+* Pointers - const
+
+#+BEGIN_SRC c
+const size_t * const mem = something();
+#+END_SRC
+
+I'll let you enjoy that one for a sec...
+
+* Pointers - Pointer is const
+
+#+BEGIN_SRC c
+const size_t * mem = something();
+
+*mem = 10; // BAD
+mem = something_else(); // OK
+#+END_SRC
+
+The trick to remember is that the const is with the type of the pointer
+Meaning that you're pointing to a const type
+
+Not a very good trick but it works for me so you can complain to someone else
+
+* Pointers - Pointee is const
+
+#+BEGIN_SRC c
+size_t * const mem = something();
+
+*mem = 10; // OK
+mem = something_else(); // BAD
+#+END_SRC
+
+The trick to remember is that the const is on the variable name
+Meaning that the variable itself is const
+
+* Pointers - Turns out it doesn't really matter...
+
+#+BEGIN_SRC c
+const size_t * mem = something();
+*((size_t *) mem) = 10;
+#+END_SRC
+
+Remember how C allows you to cast whatever memory to be whatever?
+
+Yeah so you can technically cast away const-ness.
+
+So... yeah... Compiler need to assume that unless it can prove that something is
+const, it isn't really.
+
+* Pointers - Aliasing
+
+The easiest way for a language to gain a performance edge over C.
+
+If the compiler can't trace the source of your pointers,
+then it has to assume that they could be aliases
+
+In other words, that they could point to the same data or overlapping data sets.
+
+This SEVERELY limits compilers in what they can and can't do.
+
+* Pointers - Aliasing Troubles
+#+BEGIN_SRC c
+size_t foo(size_t *x, size_t *y)
+{
+  size_t a = *x; // read value of x once
+  *y = a * 2; // if x == y then we're writing to x
+  return *x;  // which means that we must read x again
+}
+#+END_SRC
+
+The compiler can't assume that x != y and therefore must play it safe.
+
+In pointer heavy code this can cause performance problems.
+
+Arrays and by extension math heavy code, suffers from this.
+
+* Pointers - Strict-Aliasing
+
+There's one caveat in the standard known as strict-aliasing:
+
+Two pointers of different types can't alias
+
+#+BEGIN_SRC c
+size_t foo(size_t *x, double *y)
+{
+  size_t a = *x;
+  *y = a * 2;    // we can assume x != y because typeof(x) != typoeof(y)
+  return *x;     // which means the compiler can reuse the value of a here
+}
+#+END_SRC
+
+Cool, that solves a lot of problems, right?
+
+* Pointers - Right?! RIGHT?!?!?!?!?
+
+... yeah ... so there's this thing called...
+
+* Pointers - Type Punning
+
+Type punning meanings reinterpreting the bytes of a value as something else.
+
+#+BEGIN_SRC c
+double value = -1e12;
+uint64_t raw = *((uint64_t *) &value);
+
+uint64_t sign = raw >> 63;
+uint64_t mantissa = (raw >> 52) & ((1ULL << 11) - 1);
+#+END_SRC
+
+This is used in various context and breaks the strict-aliasing rules
+
+Welcome to undefined behaviour town!
+
+* Pointers - Historical Pun
+
+When compiler writers (gcc) decided to strict-aliasing by default,
+it caused quite a kerfuffle.
+
+It broke ton of existing code that relied heavily on type-punning to do things.
+
+Alot of projects, including the linux kernel, disable this feature
+
+Proving once and for all that puns are bad.
+
+* Pointers - So heuh, if it's usefull... how do you do it?
+
+The language actually doesn't provide any way to type pun directly.
+
+Most compilers do provide alternatives by either relaxing strict-aliasing rules
+or by allowing it through unions:
+
+#+BEGIN_SRC c
+union utod
+{
+   uint64_t u;
+   double d;
+};
+
+uint64_t raw = (union utod){ d = value}.u;
+uint64_t sign = raw >> 63;
+uint64_t mantissa = (raw >> 52) & ((1ULL << 11) - 1);
+#+END_SRC
+
+GCC has explicit allowance for this type of type punning.
 
 * Malloc -
 
