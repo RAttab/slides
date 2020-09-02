@@ -445,7 +445,61 @@ You know you fucked up when you have to specify that for a string function.
 
 saveptr is the state that is used in between calls.
 
-* Strings - TODO int conversion functions
+* Strings - How about we mix ints and strings for funsies?
+What could possibly go wrong?!
+
+#+BEGIN_SRC c
+int atoi(const char *)
+long atol(const char *)
+long long atoll(const char *)
+double atof(const char *)
+#+END_SRC
+
+Oh look, same problem as all the other basic string functions.
+
+Also, f stands for double. Don't question it.
+
+* Strings - What about...
+
+#+BEGIN_SRC c
+int sscanf(const char *str, const char *fmt, ...)
+#+END_SRC
+
+10 pound gorrilla, meet, tiny tiny tiny nail!
+If you don't believe me, read the man page.
+
+Also... no size!
+
+* Strings - So... what then?
+#+BEGIN_SRC c
+double strtod(const char *nptr, char **endptr);
+float strtof(const char *nptr, char **endptr);
+long double strtold(const char *nptr, char **endptr);
+
+unsigned long int strtoul(const char *nptr, char **endptr, int base);
+unsigned long long int strtoull(const char *nptr, char **endptr, int base);
+#+END_SRC
+
+A bit better but still lots of problems...
+
+* Strings - libbsd please save us...
+
+#+BEGIN_SRC c
+long long strtonum(const char *nptr, long long minval, long long maxval, const char** err)
+#+END_SRC
+
+It's an improvement with implicit bound checking via min/max val.
+
+Could be better though.
+
+* Strings - ... and that's it...
+
+Yeah, so... There's nothing very good.
+
+The other direction is a whole different set of functions
+But also a whole pile of meh.
+
+Won't continue down this rabbit hole as you're probably all asleep by now.
 
 * Strings - Paranoia is not paranoia when it's justified
 
@@ -663,11 +717,31 @@ As a result I don't have as much experience or opinions about them.
 And that's where we'll leave it at.
 
 * Pointers - the FUN part of C
+
 Access the raw pointers is one of the main and best reasons to use C.
 
 It's also the easiest way to foot-gun yourself.
 
+* Pointers - But first, A classic
+
+#+BEGIN_SRC c
+size_t * a, b;
+#+END_SRC
+
+is actually equivalent to:
+
+#+BEGIN_SRC c
+size_t *a; size_t b;
+#+END_SRC
+
+Why? Because! 
+
+It gets even more fun with const.
+
+To be safe, just do a single declaration per line.
+
 * Pointers - Memory Casting
+
 #+BEGIN_SRC c
 void * mem = mmap(NULL, len, prot, flags, fd, 0);
 assert(mem != MAP_FAILED);
@@ -871,8 +945,8 @@ Welcome to undefined behaviour town!
 
 * Pointers - Historical Pun
 
-When compiler writers (gcc) decided to strict-aliasing by default,
-it caused quite a kerfuffle.
+When compiler writers (gcc) decided to enable strict-aliasing by default,
+it caused quite a kerfuffle (technical term).
 
 It broke ton of existing code that relied heavily on type-punning to do things.
 
@@ -880,7 +954,7 @@ Alot of projects, including the linux kernel, disable this feature
 
 Proving once and for all that puns are bad.
 
-* Pointers - So heuh, if it's usefull... how do you do it?
+* Pointers - So heuh, if it's useful... how do you do it?
 
 The language actually doesn't provide any way to type pun directly.
 
@@ -900,6 +974,223 @@ uint64_t mantissa = (raw >> 52) & ((1ULL << 11) - 1);
 #+END_SRC
 
 GCC has explicit allowance for this type of type punning.
+
+* Pointers - Let's get functional!
+
+#+BEGIN_SRC c
+int (blah *) (int);
+#+END_SRC
+
+Believe it or not this is a variable declaration.
+
+Function pointer syntax is... special.
+It even has this whole spiral rule thing for reading it.
+
+* Pointers - SPIRALS
+
+Make everyone's life more sane and just typedef your function pointers.
+
+#+BEGIN_SRC c
+typedef int (fn_t *) (int);
+
+fnt_t blah;
+#+END_SRC
+
+It makes code way more readable
+You can also ignore the whole spiral rule nonsense.
+
+* Pointers - SPIRALS SPIRALS SPIRALS
+
+Since we don't have closures or proper classes in C, 
+you'll almost always want a void pointer in your function pointers
+
+#+BEGIN_SRC c
+typedef int(fn_t *) (void *, int);
+#+END_SRC
+
+This will give the user the option of passing a context object.
+
+It's needed like 90% of the time so it's basically good practice at the point.
+
+* Pointers - Putting it all together
+
+Good form to do memory allocations
+
+#+BEGIN_SRC c
+size_t *n = calloc(1, sizeof(*n));
+#+END_SRC
+
+- uses calloc 
+  -> avoids reading unitialized memory
+
+- uses sizeof variable instead of explictly specifying a type
+  -> To change the variable type, only change is required
+
+- avoids explicit void pointer cast (it's common, no idea why)
+  -> not needed and makes code easier to read
+
+* Pointers - To conclude
+
+Pointers allow for lots of fun things.
+Painful or impossible in most other languages.
+But it allows for lots of foot gun.
+
+#+BEGIN_SRC c
+uint8_t *ptr = 10;
+*ptr;
+#+END_SRC
+
+This kind of power is essential when dealing with hardware.
+There's all sorts of things placed an static memory locations within memory.
+
+* Structs - Let's organize our data
+
+#+BEGIN_SRC c
+struct bob { };
+#+END_SRC
+
+* Structs - Let's get this out of the way right now...
+
+#+BEGIN_SRC c
+struct bob {...};
+struct bob blah;
+#+END_SRC
+
+VS
+
+#+BEGIN_SRC c
+typedef struct {...} bob_t;
+bob_t blah;
+#+END_SRC
+
+The age old debate of absolute pointlessness
+
+* Structs - All because of Visual Studio...
+
+Once upon a time, the Visual Studio C++ compiler did not support writting:
+
+#+BEGIN_SRC c
+struct bob blah;
+#+END_SRC
+
+As this isn't how C++ declares classes
+But for interop reasons, we still need to be able to use C classes 
+And so the eternal workaround was born
+
+Note that I think there's probably more to this story but I like blaming it on
+visual studio so sue me.
+
+* Structs - That was like 20-30 years go.
+
+Nowadays this is a non-issue and you can use either.
+
+The biggest difference ise explicit vs too verbose.
+
+This applies to unions and enums as well.
+
+It's all down to stylistic but I generally recommend being explicit.
+
+And if you disagree with me then you're wrong and your entire life is a lie.
+
+* Structs - Now that's over... POP QUIZ!
+
+#+BEGIN_SRC c
+struct bob
+{
+    uint8_t a;
+    uint16_t b;
+    uint8_t c;
+};
+
+sizeof(struct bob);
+#+END_SRC
+
+* Structs - Nobody saw this coming
+
+The answer is obviously, it depends... duh!
+
+* Structs - Padding
+
+The compiler is free to add padding in between struct members to optimize.
+
+#+BEGIN_SRC c
+struct bob
+{
+    uint8_t a;
+    uint8_t __pad_0[3];
+    uint16_t b;
+    uint8_t __pad_1[2];
+    uint8_t c;
+};
+#+END_SRC
+
+Unaligned memory accesses can be very costly on some architecture
+
+By padding the compiler can avoid this completely
+
+But it means that the size of a structure is not portable
+
+* Structs - But I really want my mishappen struct
+
+GCC and friends have an extension for that:
+
+#+BEGIN_SRC c
+#define packed __attribute__((__packed__))
+
+struct packed bob
+{
+    uint8_t a;
+    uint16_t b;
+    uint8_t c;
+};
+static_assert(sizeof(struct bob) == 4, "");
+#+END_SRC
+
+* Structs - What if I want something more granular...
+
+Bitfields are also a thing where you can be more granular
+
+#+BEGIN_SRC c
+#define packed __attribute__((__packed__))
+
+struct packed bob
+{
+    uint8_t a:4;
+    uint8_t b:7;
+    uint8_t c:5;
+};
+#+END_SRC
+
+If I remember correctly, the ordering of the fields is implementation defined.
+
+Nobody is dumb enough to screw around with ordering though.
+
+I don't know if the compiler is allowed to do padding here 
+but if you're using bitfields, you REALLY don't want padding so be explicit
+
+Also, endianese is a thing
+
+* Structs - Personal opinion
+
+Personally, I rarely use bitfields.
+
+I find that doing the bit manip by hand is about as much work
+I also haven't memorized all the rules so I prefer to avoid land mines.
+
+... and you all know my bias so let's not get into that.
+
+* Structs - Flexible Struct members
+
+#+BEGIN_SRC c
+struct vec
+{
+    size_t len, cap;
+    uint64_t data[];
+};
+#+END_SRC
+
+
+* Structs - unions
 
 * Malloc -
 
