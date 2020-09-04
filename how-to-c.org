@@ -446,6 +446,7 @@ You know you fucked up when you have to specify that for a string function.
 saveptr is the state that is used in between calls.
 
 * Strings - How about we mix ints and strings for funsies?
+
 What could possibly go wrong?!
 
 #+BEGIN_SRC c
@@ -471,6 +472,7 @@ If you don't believe me, read the man page.
 Also... no size!
 
 * Strings - So... what then?
+
 #+BEGIN_SRC c
 double strtod(const char *nptr, char **endptr);
 float strtof(const char *nptr, char **endptr);
@@ -560,7 +562,7 @@ When delcared in a function, they live on the stack.
 
 * Arrays - Wait-a-minute...
 
-C stacks are usually 2Mb and there are no safety nets so...
+C stacks are usually 8Mb and there are no safety nets so...
 
 #+BEGIN_SRC c
 size_t arr[1ULL << 48];
@@ -666,7 +668,7 @@ Turns out there's one catch...
 memcpy: dst and src may NOT overlap
 memmove: dst and src may overlap
 
-There are performance implications before of this.
+There are performance implications because of this.
 
 Generally you'll use memcpy even if it's not safe by default.
 
@@ -734,7 +736,7 @@ is actually equivalent to:
 size_t *a; size_t b;
 #+END_SRC
 
-Why? Because! 
+Why? Because!
 
 It gets even more fun with const.
 
@@ -754,8 +756,7 @@ C allows you take to determine what the type of random pieces of memory are.
 
 Quite handy when manipulating files, IPC mechanisms, network packets, etc.
 
-WARNING: struct layouts are implmentation defined so use with care.
-There are ways around that using compiler instrinsict
+WARNING: struct layouts are implementation defined so use with care.
 
 * Pointers - Pointer Arithmetic
 
@@ -795,7 +796,7 @@ So arithmetic on void pointers is undefined behaviour...
 
 * Pointers - lulz jk
 
-It's so common in practice that gcc and friends all do the following:x
+It's so common in practice that gcc and friends all do the following:
 
 #+BEGIN_SRC c
 sizeof(void) = 1;
@@ -825,7 +826,7 @@ size_t* mem = (size_t *) calloc(1, sizeof(*mem));
 
 That cast is a waste of everybody's time and a easy way to introduce errors.
 
-This works just fine and clearer and more concise:
+This works just fine and is clearer and more concise:
 
 #+BEGIN_SRC c
 size_t* mem = calloc(1, sizeof(*mem));
@@ -876,8 +877,7 @@ Remember how C allows you to cast whatever memory to be whatever?
 
 Yeah so you can technically cast away const-ness.
 
-So... yeah... Compiler need to assume that unless it can prove that something is
-const, it isn't really.
+Pretty sure that this is all kinds of undefined behaviour though.
 
 * Pointers - Aliasing
 
@@ -891,12 +891,13 @@ In other words, that they could point to the same data or overlapping data sets.
 This SEVERELY limits compilers in what they can and can't do.
 
 * Pointers - Aliasing Troubles
+
 #+BEGIN_SRC c
 size_t foo(size_t *x, size_t *y)
 {
-  size_t a = *x; // read value of x once
-  *y = a * 2; // if x == y then we're writing to x
-  return *x;  // which means that we must read x again
+  size_t a = *x;   // read value of x once
+  *y = a * 2;      // if x == y then we're writing to x
+  return *x;       // which means that we must read x again
 }
 #+END_SRC
 
@@ -916,7 +917,7 @@ Two pointers of different types can't alias
 size_t foo(size_t *x, double *y)
 {
   size_t a = *x;
-  *y = a * 2;    // we can assume x != y because typeof(x) != typoeof(y)
+  *y = a * 2;    // we can assume x != y because typeof(x) != typeof(y)
   return *x;     // which means the compiler can reuse the value of a here
 }
 #+END_SRC
@@ -929,7 +930,7 @@ Cool, that solves a lot of problems, right?
 
 * Pointers - Type Punning
 
-Type punning meanings reinterpreting the bytes of a value as something else.
+Type punning means reinterpreting the bytes of a value as something else.
 
 #+BEGIN_SRC c
 double value = -1e12;
@@ -984,6 +985,7 @@ int (blah *) (int);
 Believe it or not this is a variable declaration.
 
 Function pointer syntax is... special.
+
 It even has this whole spiral rule thing for reading it.
 
 * Pointers - SPIRALS
@@ -997,11 +999,12 @@ fnt_t blah;
 #+END_SRC
 
 It makes code way more readable
+
 You can also ignore the whole spiral rule nonsense.
 
 * Pointers - SPIRALS SPIRALS SPIRALS
 
-Since we don't have closures or proper classes in C, 
+Since we don't have closures or proper classes in C,
 you'll almost always want a void pointer in your function pointers
 
 #+BEGIN_SRC c
@@ -1020,7 +1023,7 @@ Good form to do memory allocations
 size_t *n = calloc(1, sizeof(*n));
 #+END_SRC
 
-- uses calloc 
+- uses calloc
   -> avoids reading unitialized memory
 
 - uses sizeof variable instead of explictly specifying a type
@@ -1033,15 +1036,14 @@ size_t *n = calloc(1, sizeof(*n));
 
 Pointers allow for lots of fun things.
 Painful or impossible in most other languages.
-But it allows for lots of foot gun.
 
 #+BEGIN_SRC c
-uint8_t *ptr = 10;
-*ptr;
+*((uint8_t *) 10);
 #+END_SRC
 
 This kind of power is essential when dealing with hardware.
-There's all sorts of things placed an static memory locations within memory.
+
+something something lisp book on cpu something something
 
 * Structs - Let's organize our data
 
@@ -1074,7 +1076,7 @@ struct bob blah;
 #+END_SRC
 
 As this isn't how C++ declares classes
-But for interop reasons, we still need to be able to use C classes 
+But for interop reasons, we still need to be able to use C classes
 And so the eternal workaround was born
 
 Note that I think there's probably more to this story but I like blaming it on
@@ -1165,7 +1167,7 @@ If I remember correctly, the ordering of the fields is implementation defined.
 
 Nobody is dumb enough to screw around with ordering though.
 
-I don't know if the compiler is allowed to do padding here 
+I don't know if the compiler is allowed to do padding here
 but if you're using bitfields, you REALLY don't want padding so be explicit
 
 Also, endianese is a thing
@@ -1179,7 +1181,33 @@ I also haven't memorized all the rules so I prefer to avoid land mines.
 
 ... and you all know my bias so let's not get into that.
 
-* Structs - Flexible Struct members
+* Structs - Flexible array members
+
+#+BEGIN_SRC c
+struct buf
+{
+    size_t len;
+    uint64_t data[];
+};
+
+size_t len = 10;
+struct buf *b = calloc(1, sizeof(*b) + len * sizeof(b->data));
+*b = (struct buf) { .len = len };
+b->data[3];
+#+END_SRC
+
+Everything is allocated in one call to calloc and freed with one call to free
+
+Data layout is contiguous which is nice for your cache.
+
+Must be the last element of the structure
+Which means you can only have one in your struct.
+
+That also includes nested structs.
+
+* Structs - Flexible care
+
+Might sound like a good idea to do
 
 #+BEGIN_SRC c
 struct vec
@@ -1189,11 +1217,70 @@ struct vec
 };
 #+END_SRC
 
+* Structs - Not so flexible interfaces
+
+You then end up with this type of function definition:
+
+#+BEGIN_SRC c
+struct vec *vec_append(struct *vec, uint64_t item);
+#+END_SRC
+
+Meaning that every mutable call could modify the size of the entire struct.
+
+So every function has to potentially return the object.
+
+You could double pointer but that's a bit ugly and error prone.
+
+* Structs - Flexible recomendations
+
+I generally recommend using FSM for array whose size will be forever static.
+
+In other cases I would add the extra layer of indirection
+
+#+BEGIN_SRC c
+struct vec
+{
+    size_t len, cap;
+    uint64_t *data;
+};
+
+size_t len = ...;
+struct vec *v = calloc(1, sizeof(*v));
+*v = (struct vec) {
+    .len = 0, .cap = len,
+    .data = calloc(len, sizeof(v->data)),
+};
+#+END_SRC
+
+This tends to lead to interfaces that are easier to use.x
 
 * Structs - unions
 
-* Malloc -
+Minute side diversion into poor-man's sum type
 
+#+BEGIN_SRC c
+union bob {
+    uint64_t item;
+    uint8_t bytes[sizeof(uint64_t)];
+};
+#+END_SRC
+
+Used either for type punning or as an optimization to save on space.
+
+Kernel uses it in its mega-structs to save on space.
+
+It's pretty hell to read though.
+
+* Structs - That's about it
+
+Nothing too earth shattering or ground-breaking for structs.
+
+Only like 2 undefined behaviours to keep an eye out for.
+
+That's pretty good all things considered.
+
+* Functions - Intro
+* misc
 
 #+END_SRC
 
