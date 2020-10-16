@@ -1,0 +1,508 @@
+* Performance Tuning
+
+* Quotes make me sound smart
+
+... premature optimization is the root of all evil. [...]
+
+- Donald Knuth
+
+* Bad misquote! BAD!
+
+There is no doubt that the grail of efficiency leads to abuse. Programmers waste
+enormous amounts of time thinking about, or worrying about, the speed of
+noncritical parts of their programs, and these attempts at efficiency actually
+have a strong negative impact when debugging and maintenance are considered. We
+should forget about small efficiencies, say about 97% of the time: **premature
+optimization is the root of all evil**. Yet we should not pass up our
+opportunities in that critical 3%.
+
+- Donald Knuth
+
+
+* Key Point I
+
+Optimization Makes Your Code Worst
+
+* Key Point II
+
+Your first version should usually strive to be clean and simple
+
+Any optimizations you do will take you away from the ideal
+
+* Key Point III
+
+There's no lower bound on code complexity and readability!
+
+You need a good reason to optimize
+You need to know when to stop
+
+* Key Point IV
+
+99% of optimizations happen at the design stage
+
+If you do things well, micro-optimizations should be rare
+
+
+* Objectives I
+
+Performance has two main axis:
+
+Latency: How long something takes
+
+Throughput: How much we can process per second
+
+* Objectives II
+
+They are not linearily corelated to each other!
+
+Increasing THROUGHPUT may increase or decrease LATENCY
+
+Reducing LATENCY may decrease or increase THROUGHPUT
+
+* Objectives III
+
+Set latency AND throughput targets
+BEFORE YOU START designing or optimizing code
+
+
+* Bottlenecks I
+
+A hot-code path is where your program is spending all its time
+
+A bottleneck is a where your hot-code path is currently spending all its time
+
+* Bottlenecks II
+
+hot-code paths: macro, doesn't change as you optimize
+
+bottlenecks: micro, changes as you optimize
+
+* Bottlenecks III
+
+hot-code paths: identified by understanding what your program does
+
+bottlenecks: identified through profiling and mesurements
+
+* Bottlenecks IV
+
+If bottleneck is not in your hot-code path: YOU DON'T UNDERSTAND YOUR PROGRAM
+
+That's ok. It happens. You just learned something
+
+Re-evaluate what your hot-code path is
+
+
+* Types of Bottlenecks I
+
+Not everything is a CPU bottleneck
+
+In fact, on modern CPUs, it's RARELY the bottleneck
+
+* Types of Bottlenecks II
+
+#+BEGIN_SRC shell
+[remi@lga-gateway-1 ~]$ sudo perf stat --timeout 1000 -p $(pgrep beam) \
+    -e instructions -e cycles
+
+ Performance counter stats for process id '30736':
+
+    70,599,271,342      instructions              #    0.64  insn per cycle
+   110,772,021,019      cycles
+
+       1.001732423 seconds time elapsed
+#+END_SRC
+
+Modern CPU can get up to 4 instructions per cycle
+
+* Types of Bottlenecks III
+
+#+BEGIN_SRC shell
+[remi@lga-gateway-1 ~]$ sudo perf stat --timeout 1000 -p $(pgrep beam) \
+    -e L1-dcache-loads -e L1-dcache-load-misses \
+    -e L1-icache-loads -e L1-icache-load-misses \
+    -e LLC-loads -e LLC-load-misses
+
+ Performance counter stats for process id '30736':
+
+    17,821,301,588      L1-dcache-loads                                               (80.00%)
+     1,348,210,582      L1-dcache-load-misses     #    7.57% of all L1-dcache hits    (79.99%)
+   <not supported>      L1-icache-loads
+     1,255,680,990      L1-icache-load-misses                                         (80.01%)
+       542,559,694      LLC-loads                                                     (80.04%)
+        54,481,642      LLC-load-misses           #   10.04% of all LL-cache hits     (80.08%)
+
+       1.004556160 seconds time elapsed
+#+END_SRC
+
+A miss takes about one order of magnitude
+
+* Types of Bottlenecks IV
+
+#+BEGIN_SRC shell
+[remi@lga-gateway-1 ~]$ sudo perf stat --timeout 1000 -p $(pgrep beam) \
+    -e iTLB-loads -e iTLB-load-misses \
+    -e dTLB-loads -e dTLB-load-misses
+
+ Performance counter stats for process id '30736':
+
+       104,464,755      iTLB-loads
+        52,767,144      iTLB-load-misses          #   50.51% of all iTLB cache hits
+    16,912,403,505      dTLB-loads
+       135,281,339      dTLB-load-misses          #    0.80% of all dTLB cache hits
+
+       1.003465899 seconds time elapsed
+#+END_SRC
+
+* Types Of Bottlenecks V
+
+Memory is your most-likely bottleneck
+
+*Design your code to be memory friendly*
+
+* Types of Bottlenecks VI
+
+Network bottlenecks
+
+You can't optimize the speed of light
+
+* Types of Bottlenecks
+
+Disk bottlenecks
+
+Not all datasets fit in memory sadly.
+
+* Types of Bottlenecks VII
+
+Off-CPU time
+
+Profilers tend to not mesure when your code isn't running
+
+* Types of Bottlenecks VIII
+
+Contention
+
+Locks and other form of synchronization mechanism
+
+My personal favourite :)
+
+
+* Mesuring I
+
+Essential.
+
+If you're not mesuring, you're not optimizing.
+
+* Mesuring II
+
+WHAT and HOW you mesure are both important and non-trivial
+
+
+* Mesuring - What I
+
+#+BEGIN_SRC c
+start = now();
+
+bob_the_function();
+
+delta = now() - start;
+#+END_SRC
+
+What are we mesuring here?
+
+* Mesuring - What II
+
+- bob_the_function()
+- time()
+- context switches
+- interpreters
+- JITs
+- cache misses
+- TLB misses
+- page faults
+- cpu migrations
+- hardware interrupts
+- system suspended events
+- processes sharing physical core (hyper-thread)
+- ...
+
+* Mesuring - What III
+
+Confounding Factors: external variables that influences your mesurements
+
+* Mesuring - What IV
+
+Confounding factors need to be controled or eliminated
+
+You want consistency and reproducibility in your mesurements
+
+Compare apples to apples
+
+* Mesuring - What VI
+
+They're not all external to your program
+
+Your input data may introduce variance
+
+* Mesuring - What V
+
+Degrees matter
+
+If bob_the_function() takes 2 hours
+-> hardware interrupts unlikely to matter
+
+If bob_the_function_takes 100ms
+-> context switches could lead to high variance in your results
+
+* Mesuring - What VI
+
+Caches are everywhere and controlling them is super important
+
+* Mesuring - What VII
+
+general recommendation for dealing with caches
+- pin your process to a cpu
+- remove all other processes from the pysical cpu and/or node
+- prime your caches before mesuring
+- size your dataset according to your cache sizes
+
+* Mesuring - What VIII
+
+Types of caches to control for:
+- memory: L1, L2, LLC, I$ D$, TLB
+- file system: buffer cache
+- kernel caches and queues: networking buffers
+- JIT/interpreters
+
+
+* Mesuring - How I
+
+Throughput: number of events per second
+Latency: how long an event takes
+
+both have a time component so knowing how to mesure time is crucial
+
+* Mesuring - How II
+
+clock_gettime()
+- CLOCK_REALTIME
+- CLOCK_REALTIME_ALARM
+- CLOCK_REALTIME_COARSE
+- CLOCK_TAI
+- CLOCK_MONOTONIC
+- CLOCK_MONOTONIC_COARSE
+- CLOCK_MONOTONIC_RAW
+- CLOCK_BOOTTIME
+- CLOCK_BOOTTIME_ALARM
+- CLOCK_PROCESS_CPUTIME_ID
+- CLOCK_THREAD_CPUTIME_ID
+
+* Mesuring - How III
+
+[CLOCK_REALTIME] is affected by discontinuous jumps in the system time (e.g., if
+the system administrator manually changes the clock), and by the incremental
+adjustments performed by adj‐ time(3) and NTP.
+
+-- man 2 clock_gettime
+
+* Mesuring - How IV
+
+The CLOCK_MONOTONIC clock is not affected by discontinuous jumps in the system
+time (e.g., if the system administrator manually changes the clock), but is
+affected by the incremental adjust‐ ments performed by adjtime(3) and NTP.  This
+clock does not count time that the system is suspended.  All CLOCK_MONOTONIC
+variants guarantee that the time returned by consecutive calls will not go
+backwards, but successive calls may—depending on the architecture—return
+identical (not-increased) time values.
+
+-- man 2 clock_gettime
+
+* Mesuring - How V
+
+CLOCK_MONOTONIC: nanosecond resolution
+CLOCK_MONOTONIC_COARSE: second level resolution
+CLOCK_MONOTONIC_RAW: ~ cycle counter
+
+* Mesuring - How VI
+
+The "vDSO" (virtual dynamic shared object) is a small shared library that the
+kernel automatically maps into the address space of all userspace applications.
+Applications usually do not need to concern themselves with these details as the
+vDSO is most commonly called by the C library.  This way you can code in the
+normal way using standard functions and the C library will take care of using
+any functionality that is available via the vDSO.
+
+-- man vdso
+
+* Mesuring - How VII
+
+To avoid variance of system calls, use vDSO based clocks
+
+CLOCK_REALTIME
+CLOCK_MONOTONIC
+CLOCK_MONOTONIC_COARSE
+CLOCK_MONOTONIC_RAW
+
+(been a while, need to double check)
+
+* Mesuring - How VIII
+
+Hardware Timestamp Counters
+If calling clock_gettime() is more expensive then code being timed
+
+#+BEGIN_SRC c
+#define RDTSC_START(cycles)                                                    \
+    register uint32_t cyc_high, cyc_low;                                       \
+    __asm volatile("cpuid\n\t"                                                 \
+                   "rdtsc\n\t"                                                 \
+                   "mov %%edx, %0\n\t"                                         \
+                   "mov %%eax, %1\n\t"                                         \
+                   : "=r"(cyc_high), "=r"(cyc_low)::"%rax", "%rbx", "%rcx",    \
+                     "%rdx");                                                  \
+#+END_SRC
+
+Use with great care.
+- cpuid used to flush the cache
+- rax, rbx, rcx rdx registers marked for clobering
+
+* Mesuring - How IX
+
+Plethora of other tools to mesure and visualize perf information:
+- perf: hardware performance counters
+- ss: network monitoring tool
+- iostat: disk monitoring tool
+- language specific profilers
+- ...
+
+The greater your toolkit, the better you'll be at finding bottlenecks
+
+
+* Optimizing I
+
+99% of optimizations happen at the design stage
+
+* Optimizing II
+
+How you structure your program and data
+
+More important then any micro optimization you could ever make
+
+This happens before you sit down to write any code
+
+* Optimizing III
+
+Always keep in mind your hot code paths!
+
+Your goal is to minimize the amount of work you do in these code paths.
+
+* Optimizing IV
+
+The main role of code is to process data
+
+How you organize your data is crucial!
+
+Data-structures are the foundation of everything you do. Learn them and use them!
+
+* Optimizing V
+
+When designing, always have a good understanding of:
+- what your data looks like
+- how your data is structured
+- what operations you need to perform on your data
+- what are the performance requirements for each operations
+
+* Optimizing - Micro
+
+Micro-optimization: do less work
+
+* Optimizing - Micro
+
+When working at his level, methodology is important:
+
+1. Mesure to form a baseline
+2. Attempt an optimization
+3. Mesure the outcome
+4. If slower then throw what you did in garbage
+
+Don't over invest in experimental code!
+
+* Optimizing - Don't do the same thing twice
+
+#+BEGIN_SRC python
+total = 0
+for x in bob_the_list:
+    total = total + x * magic_value(bob_the_list)
+#+END_SRC c
+
+* Optimizing - Don't do the same thing twice
+
+#+BEGIN_SRC python
+total = 0
+magic = magic_value(bob_the_list)
+for x in bob_the_list:
+    total = total + x * magic
+#+END_SRC c
+
+* Optimizing - Use cold path to speed up hot path
+
+#+BEGIN_SRC python
+def find(x_list):
+    for x in bob_the_list:
+        if x == "bob":
+            return True
+    return False
+#+END_SRC
+
+* Optimizing - Use cold path to speed up hot path
+
+#+BEGIN_SRC python
+bob_the_index = set(bob_the_list)
+
+def find(x):
+    return x in bob_the_index
+#+END_SRC
+
+* Optimizing - Batching
+
+#+BEGIN_SRC python
+lock = Lock()
+
+def do_the_thing():
+    for x in bob_the_list:
+        lock.acquire()
+        compute_the_thing()
+        lock.release()
+#+END_SRC python
+
+* Optimizing - Batching
+
+#+BEGIN_SRC python
+lock = Lock()
+
+def do_the_thing():
+    lock.acquire()
+    for x in bob_the_list:
+        compute_the_thing()
+    lock.release()
+#+END_SRC python
+
+* Optimizing - Batching
+
+Vectorization is another form of batching
+
+C examples are WAY too ugly to be easily digestable
+
+* Optimizing VII
+
+And that's it...
+
+* Optimizing VIII
+
+You probably feel cheated or that I'm hiding my magical voodoo secrets
+
+* Optimizing IX
+
+I'm not.
+
+Micro-optimization is very situation dependent and requires creativity
+
+But it always boils down to doing less work
