@@ -1252,7 +1252,7 @@ struct vec *v = calloc(1, sizeof(*v));
 };
 #+END_SRC
 
-This tends to lead to interfaces that are easier to use.x
+This tends to lead to interfaces that are easier to use.
 
 * Structs - unions
 

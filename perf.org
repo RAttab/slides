@@ -12,8 +12,8 @@ There is no doubt that the grail of efficiency leads to abuse. Programmers waste
 enormous amounts of time thinking about, or worrying about, the speed of
 noncritical parts of their programs, and these attempts at efficiency actually
 have a strong negative impact when debugging and maintenance are considered. We
-should forget about small efficiencies, say about 97% of the time: **premature
-optimization is the root of all evil**. Yet we should not pass up our
+should forget about small efficiencies, say about 97% of the time: *premature
+optimization is the root of all evil*. Yet we should not pass up our
 opportunities in that critical 3%.
 
 - Donald Knuth
@@ -33,8 +33,8 @@ Any optimizations you do will take you away from the ideal
 
 There's no lower bound on code complexity and readability!
 
-You need a good reason to optimize
-You need to know when to stop
+You need A GOOD REASON to optimize
+You need to know WHEN TO STOP
 
 * Key Point IV
 
@@ -42,10 +42,12 @@ You need to know when to stop
 
 If you do things well, micro-optimizations should be rare
 
+Addresses mis-alignment between your program and the system it's running on
+
 
 * Objectives I
 
-Performance has two main axis:
+Performance is mesured on:
 
 Latency: How long something takes
 
@@ -53,7 +55,7 @@ Throughput: How much we can process per second
 
 * Objectives II
 
-They are not linearily corelated to each other!
+They are NOT linearily corelated to each other!
 
 Increasing THROUGHPUT may increase or decrease LATENCY
 
@@ -61,15 +63,26 @@ Reducing LATENCY may decrease or increase THROUGHPUT
 
 * Objectives III
 
-Set latency AND throughput targets
+Set latency and throughput targets
+
 BEFORE YOU START designing or optimizing code
+
+
+* Side Note About Performance
+
+Glamourized by war stories which fall in 2 categories:
+
+- Brenden Gregg style bottleneck hunting
+- Cool micro-optimizations stories, usually from the 80s
+
+This will rarely match your reality
 
 
 * Bottlenecks I
 
-A hot-code path is where your program is spending all its time
+A hot-code path are performance sensitives areas of the code
 
-A bottleneck is a where your hot-code path is currently spending all its time
+A bottleneck is a where your hot-code path is spending all its time
 
 * Bottlenecks II
 
@@ -79,17 +92,9 @@ bottlenecks: micro, changes as you optimize
 
 * Bottlenecks III
 
-hot-code paths: identified by understanding what your program does
+hot-code paths: identified by understanding how your program is used
 
 bottlenecks: identified through profiling and mesurements
-
-* Bottlenecks IV
-
-If bottleneck is not in your hot-code path: YOU DON'T UNDERSTAND YOUR PROGRAM
-
-That's ok. It happens. You just learned something
-
-Re-evaluate what your hot-code path is
 
 
 * Types of Bottlenecks I
@@ -134,7 +139,7 @@ Modern CPU can get up to 4 instructions per cycle
        1.004556160 seconds time elapsed
 #+END_SRC
 
-A miss takes about one order of magnitude
+A miss takes about one order of magnitude more time then a hit
 
 * Types of Bottlenecks IV
 
@@ -165,19 +170,19 @@ Network bottlenecks
 
 You can't optimize the speed of light
 
-* Types of Bottlenecks
+* Types of Bottlenecks VII
 
 Disk bottlenecks
 
 Not all datasets fit in memory sadly.
 
-* Types of Bottlenecks VII
+* Types of Bottlenecks VIII
 
 Off-CPU time
 
 Profilers tend to not mesure when your code isn't running
 
-* Types of Bottlenecks VIII
+* Types of Bottlenecks IX
 
 Contention
 
@@ -237,21 +242,15 @@ You want consistency and reproducibility in your mesurements
 
 Compare apples to apples
 
-* Mesuring - What VI
-
-They're not all external to your program
-
-Your input data may introduce variance
-
 * Mesuring - What V
 
 Degrees matter
 
 If bob_the_function() takes 2 hours
--> hardware interrupts unlikely to matter
+Then hardware interrupts unlikely to matter
 
-If bob_the_function_takes 100ms
--> context switches could lead to high variance in your results
+If bob_the_function() takes 100ms
+Then context switches could lead to high variance in your results
 
 * Mesuring - What VI
 
@@ -272,6 +271,7 @@ Types of caches to control for:
 - file system: buffer cache
 - kernel caches and queues: networking buffers
 - JIT/interpreters
+- application caches
 
 
 * Mesuring - How I
@@ -279,7 +279,7 @@ Types of caches to control for:
 Throughput: number of events per second
 Latency: how long an event takes
 
-both have a time component so knowing how to mesure time is crucial
+Both have a time component so knowing how to mesure time is crucial
 
 * Mesuring - How II
 
@@ -300,7 +300,7 @@ clock_gettime()
 
 [CLOCK_REALTIME] is affected by discontinuous jumps in the system time (e.g., if
 the system administrator manually changes the clock), and by the incremental
-adjustments performed by adj‐ time(3) and NTP.
+adjustments performed by adjtime(3) and NTP.
 
 -- man 2 clock_gettime
 
@@ -308,7 +308,7 @@ adjustments performed by adj‐ time(3) and NTP.
 
 The CLOCK_MONOTONIC clock is not affected by discontinuous jumps in the system
 time (e.g., if the system administrator manually changes the clock), but is
-affected by the incremental adjust‐ ments performed by adjtime(3) and NTP.  This
+affected by the incremental adjustments performed by adjtime(3) and NTP.  This
 clock does not count time that the system is suspended.  All CLOCK_MONOTONIC
 variants guarantee that the time returned by consecutive calls will not go
 backwards, but successive calls may—depending on the architecture—return
@@ -361,8 +361,9 @@ If calling clock_gettime() is more expensive then code being timed
 #+END_SRC
 
 Use with great care.
-- cpuid used to flush the cache
+- cpuid used to flush the caches
 - rax, rbx, rcx rdx registers marked for clobering
+- etc.
 
 * Mesuring - How IX
 
@@ -373,7 +374,13 @@ Plethora of other tools to mesure and visualize perf information:
 - language specific profilers
 - ...
 
-The greater your toolkit, the better you'll be at finding bottlenecks
+* Mesuring - How X
+
+The more you know your system and your tools
+
+The easier it will be to know WHAT to mesure and HOW to mesure it
+
+THERE IS NO SHORTCUTS
 
 
 * Optimizing I
@@ -400,7 +407,8 @@ The main role of code is to process data
 
 How you organize your data is crucial!
 
-Data-structures are the foundation of everything you do. Learn them and use them!
+Data-structures are the foundation of everything you do.
+Learn them and use them!
 
 * Optimizing V
 
@@ -410,86 +418,64 @@ When designing, always have a good understanding of:
 - what operations you need to perform on your data
 - what are the performance requirements for each operations
 
+* Optimizing VI
+
+Death by a thousand-cuts is a real thing
+
+Usually caused by inneficient use of the language
+
+Can be hard to detect as it's evenly spread out everywhere
+
 * Optimizing - Micro
 
 Micro-optimization: do less work
 
 * Optimizing - Micro
 
-When working at his level, methodology is important:
+When working at this level, methodology is important:
 
 1. Mesure to form a baseline
 2. Attempt an optimization
 3. Mesure the outcome
-4. If slower then throw what you did in garbage
+4. If slower then throw away what you did in the garbage
 
-Don't over invest in experimental code!
+Don't over invest or get attached to experimental code!
 
-* Optimizing - Don't do the same thing twice
+* Optimizing - Micro
 
-#+BEGIN_SRC python
-total = 0
-for x in bob_the_list:
-    total = total + x * magic_value(bob_the_list)
-#+END_SRC c
+Look at your compiler output!
 
-* Optimizing - Don't do the same thing twice
+DON'T waste your time on optimizations that compilers can do trivially.
 
-#+BEGIN_SRC python
-total = 0
-magic = magic_value(bob_the_list)
-for x in bob_the_list:
-    total = total + x * magic
-#+END_SRC c
+DO give the compiler a hand when it's struggling.
 
-* Optimizing - Use cold path to speed up hot path
+godbolt.org is your bestest of friend.
 
-#+BEGIN_SRC python
-def find(x_list):
-    for x in bob_the_list:
-        if x == "bob":
-            return True
-    return False
-#+END_SRC
+* Optimizing - DRY
 
-* Optimizing - Use cold path to speed up hot path
+Don't compute the same thing twice
 
-#+BEGIN_SRC python
-bob_the_index = set(bob_the_list)
+Leverage your cold paths to speed up your hot paths
 
-def find(x):
-    return x in bob_the_index
-#+END_SRC
+Pre-compute things: lookup-tables, indexes, function calls, etc.
 
-* Optimizing - Batching
+* Optimizing - Zoom Out
 
-#+BEGIN_SRC python
-lock = Lock()
+You can try to optimize memcpy
 
-def do_the_thing():
-    for x in bob_the_list:
-        lock.acquire()
-        compute_the_thing()
-        lock.release()
-#+END_SRC python
+Or you could make less copies
 
-* Optimizing - Batching
+* Optimizing - Zoom Out
 
-#+BEGIN_SRC python
-lock = Lock()
+Avoid over focusing on a tiny slither of code
 
-def do_the_thing():
-    lock.acquire()
-    for x in bob_the_list:
-        compute_the_thing()
-    lock.release()
-#+END_SRC python
+Always keep in mind the system as a whole
 
-* Optimizing - Batching
+* Optimizing - Batch vs Stream
 
-Vectorization is another form of batching
+Good way to make latency and throughput tradeoffs
 
-C examples are WAY too ugly to be easily digestable
+Can enable things like vectorization and parallelization
 
 * Optimizing VII
 
@@ -506,3 +492,6 @@ I'm not.
 Micro-optimization is very situation dependent and requires creativity
 
 But it always boils down to doing less work
+
+
+* Questions?
