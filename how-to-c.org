@@ -1181,6 +1181,43 @@ I also haven't memorized all the rules so I prefer to avoid land mines.
 
 ... and you all know my bias so let's not get into that.
 
+* Structs - Opaque
+
+#+BEGIN_SRC c
+struct blah;
+
+void blah(struct blah *); // OK!
+void bloh(struct blah); // BWAD!
+#+END_SRC
+
+* Structs - The size of Opaqueness
+
+#+BEGIN_SRC c
+struct blah;
+
+sizeof(struct blah *) == sizeof(uintptr_t);
+sizeof(struct blah) == ???;
+#+END_SRC
+
+* Structs - Opaque is like being blind
+
+#+BEGIN_SRC c
+// blah.h
+struct blah;
+struct blah *make_blah(void);
+
+// blah.c
+struct blah {};
+struct blah *make_blah(void)
+{
+    return calloc(1, sizeof(*blah));
+};
+#+END_SRC
+
+Allows you to hide implementation details.
+
+Use it whenever possible in your interfaces.
+
 * Structs - Flexible array members
 
 #+BEGIN_SRC c
@@ -1317,8 +1354,134 @@ Only like 2-3 undefined behaviours to keep an eye out for.
 That's pretty good all things considered.
 
 * Functions - Outline
+- the no-param thing
+- declaration vs defintion
+  - ordering matters
+- header vs c files
+- namespaces
+- extern vs static 
+- compilation units
 
+- gcc attributes
 
+* Functions - The thing that does stuff...
+
+#+BEGIN_SRC c
+unsigned add(unsigned x, unsigned y)
+{
+    return x + y;
+}
+#+END_SRC
+
+* Functions - The void... it stares back
+
+#+BEGIN_SRC c
+void blah();
+blah(12);
+#+END_SRC
+
+Valid or not?
+
+* Functions - Embrace the void...
+
+#+BEGIN_SRC c
+void blah();
+#+END_SRC
+
+Accepts an unknown number of arguments of unknown type.
+
+#+BEGIN_SRC c
+void blah(void);
+#+END_SRC
+
+Accepts no arguments
+
+* Functions - Be one with the void...
+
+Ye olde C.
+
+Modern GCC and friends will error out.
+
+* Functions - I demand Order
+
+#+BEGIN_SRC c
+void first(void) { second(); } // second() doesn't exist :'(
+void second(void) {}
+#+END_SRC
+
+C likes things to be nice and orderly
+
+* Functions - The declaration of definition
+
+#+BEGIN_SRC c
+void second(void); // declaration
+
+void first(void) { second(); } // second() doesn't exist :'(
+void second(void) {}
+#+END_SRC
+
+Declaring a function tells the compiler that this function exists somwhere
+
+* Functions - Imma gonna declare you!
+
+If you need a function across multiple files, you can just declare it!
+
+#+BEGIN_SRC c
+// blah.c
+void blah(void) {}
+
+// bleh.c
+void blah(void);
+void bleh(void) { blah(); }
+#+END_SRC
+
+That works!
+
+... but gets tedious quickly...
+
+* Functions - Inclusivity
+
+#+BEGIN_SRC c
+// blah.h
+void blah(void);
+
+// blah.c
+void blah(void) {}
+
+// bleh.c
+#include "blah.h"   // needs to know that blah exists!
+void bleh(void) { blah(); }
+#+END_SRC
+
+The header file is where you delcare things for OTHER compilation units
+
+* Functions - The head is the face
+
+See headers as your interface
+
+Keep them clean and minimal
+
+The less you expose the easier the interface is to understand
+
+* Functions - Off with your head!
+
+DON'T USE HEADERS TO STORE ALL YOUR DECLARATION WILLY NILLY
+
+It's the equivalent of marking all your functions as public
+
+Or of exporting all your functions in erlang
+
+DON'T DO THAT
+
+* Functions - Packaging
+
+Treat every header like a package or a module
+
+The C file will implement your package and the headers will present its interface.
+
+* Functions - The space of names
+
+Which brings up namepsaces in c or the lack of
 
 * misc
 
