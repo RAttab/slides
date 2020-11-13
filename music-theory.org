@@ -1,0 +1,249 @@
+* Music Theory
+
+As understood by a non-musician :)
+
+* Disclaimer
+
+Music Theory is Descriptive not Proscritive
+
+* Disclaimer
+
+Music Theory is a tool to understand and help write music
+
+It's not a strict set of rules to be adhered to
+
+If something sounds good, then it sounds good, music theory be damned.
+
+* Disclaimer
+
+Also I'm not a musician or a music theorist
+
+I pieced this stuff up from various sources
+
+It's how music makes sense in my brain
+
+Some of the terminology is slightly wrong but I don't care.
+
+* Disclaimer
+
+I've a great many different approaches to explaining music theory
+
+Most of it starts with music notation
+
+I don't do that as I never found it a satisfying way to describing music
+
+
+* Basics - Octave
+
+Doubling of a frequency
+
+* Basics - Octave
+
+Concert A is 440hz
+
+220hz and 880hz are both As
+
+* Basics - Octave
+
+In western music...
+
+Octaves are split into 12 semi-tone
+
+| - | - | - | - | - | - | - | - | - | - | - | - |
+
+All of which are created equal
+
+* Basics - Octave
+
+7 of which have been given arbitrary names
+
+| A | - | B | C | - | D | - | E | F | - | G | - |
+
+* Basics - Octave
+
+The missing notes are represented with little symbols
+
+#+BEGIN_SRC
+# -> shard -> + 1
+b -> flat -> - 1
+#+END_SRC
+
+| A | A# | B | C | C# | D | D# | E | F | F# | G | G# |
+
+| A | Bb | B | C | Db | D | Eb | E | F | Gb | G | Ab |
+
+* Basics - Octave
+
+Why this layout? 
+
+Scales will explain but for now assume it's arbitrary
+
+
+* Basics - Octave
+
+... and now I want you to forget everyting about those letters ...
+
+THEY'RE NOT IMPORTANT
+
+What's important is those 12 notes.
+
+
+* Intervals - What is Music
+
+A note played by itself is not really music
+
+I'm talking from a practical stand point and not a philosophical standpoint.
+
+* Intervals - What is Music
+
+A succession of notes is what forms music
+
+Notes played together is what forms music
+
+* Intervals - Distance
+
+The distance between the notes is what gives them flavour
+
+These are called harmonic intervals
+
+(actually I think I have the wrong names but I don't care).
+
+* Intervals - Names
+
+The intervals have names to help describe them:
+
+|  # | flavour | Name   |
+|----+---------+--------|
+|  0 |         | Unison |
+|----+---------+--------|
+|  1 | minor   | 2nd    |
+|  2 | major   | 2nd    |
+|----+---------+--------|
+|  3 | minor   | 3rd    |
+|  4 | major   | 3rd    |
+|----+---------+--------|
+|  5 | perfect | 4th    |
+|  6 | aug/dim |        |
+|  7 | perfect | 5th    |
+|----+---------+--------|
+|  8 | minor   | 6th    |
+|  9 | major   | 6th    |
+|----+---------+--------|
+| 10 | minor   | 7th    |
+| 11 | major   | 7th    |
+|----+---------+--------|
+| 12 |         | Octave |
+
+* Intervals - Names
+
+The name might feel a bit arbitrary at first and that's ok
+
+Takes time and practice to internalize
+
+* Intervals - Names
+
+Unison -> the same note
+Octave -> one octave apart
+
+Neither of these really add much flavour
+
+* Intervals - Names
+
+Standard terminology in music:
+
+Minor -> sad
+Major -> happy
+
+Implies that a minor 3rd is sader and a major 3rd is happy
+
+* Intervals - Names
+
+Perfect is a bit more weird but consider this:
+
+perfect 4th + perfect 5h = Octave
+
+5 + 7 = 12
+
+* Intervals - Names
+
+The Perfect 5th rarely stands out
+
+It tends to take the function of adding depth to chords or as a transition note
+
+It's omnipresent because it's very neutral
+
+* Intervals - Conclusion
+
+These intervals will act as our vocabulary
+
+Otherwise that's it, nothing too complicated there.
+
+
+* Chords - What is it?
+
+Playing multiple notes at the same time
+
+* Chords - What is it?
+
+Flavour is determined by the intervals that make up the chord
+
+* Chords - Harmonic Formula
+
+Simple way to describe a chord
+
+Major chord: 1-3-5
+Minor chord: 1-3b-5
+
+* Chords - Harmonic Formula
+
+To apply the formula:
+
+1. Pick a root
+2. Apply the intervals
+3. Play the Notes
+
+* Chords - Harmonic Formula
+
+C major:
+| 1 | root        | C + 0 | C |
+| 3 | major 3rd   | C + 4 | E |
+| 5 | perfect 5th | C + 7 | G |
+
+A minor:
+| 1 | root        | A + 0 | A |
+| 3 | major 3rd   | A + 3 | C |
+| 5 | perfect 5th | A + 7 | E |
+
+* Chords - Harmonic Formula
+
+The only difference between a Major and Minor chord is one semi-tone
+
+Root: anchors the other notes
+3rd:  gives the chord its flavour
+5th:  adds depth to the chord (it can often be omitted
+
+* Chords - Harmonic Formula
+
+You can modify the formula to get different types of chords
+
+|       1-5 | Power chord |
+|   1-3-5-7 | Maj 7th     |
+|  1-3b-5-7 | Min 7th     |
+|     1-4-5 |             |
+| 1-3-5-7-9 | Maj 9th     |
+
+There are ton of these
+
+Fancy chords look far less complicated when viewed this way
+
+* Chords - Conclusion
+
+And that's it!
+
+* Scales - Note Sequence
+
+
+
+
+
+
