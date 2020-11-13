@@ -1233,7 +1233,7 @@ You could double pointer but that's a bit ugly and error prone.
 
 * Structs - Flexible recomendations
 
-I generally recommend using FSM for array whose size will be forever static.
+I generally recommend using FSM for arrays whose size will be forever static.
 
 In other cases I would add the extra layer of indirection
 
@@ -1255,31 +1255,71 @@ struct vec *v = calloc(1, sizeof(*v));
 This tends to lead to interfaces that are easier to use.
 
 * Structs - unions
-
 Minute side diversion into poor-man's sum type
 
 #+BEGIN_SRC c
-union bob {
-    uint64_t item;
-    uint8_t bytes[sizeof(uint64_t)];
+struct blah
+{
+    enum type type;
+    union
+    {
+        uint8_t u8;
+        uint64_t u64;
+        double f64;
+        struct { uint8_t x, y; } pos;
+    } d;
 };
 #+END_SRC
 
-Used either for type punning or as an optimization to save on space.
+Either for polymorphism or to save on space.
 
-Kernel uses it in its mega-structs to save on space.
+sizeof is the size of the biggest element.
 
-It's pretty hell to read though.
+Layout is probably implemention dependent
+
+* Structs - The U is for Undefined Behaviour
+
+#+BEGIN_SRC c
+d.u8 = 10;
+return d.u64;
+#+END_SRC
+
+Not allowed to read to one element and read from another one.
+
+* Structs - ... wait a minute ...
+
+Earlier example related to type punning and strict aliasing:
+
+#+BEGIN_SRC c
+union utod
+{
+   uint64_t u;
+   double d;
+};
+
+uint64_t raw = (union utod){ d = value}.u;
+uint64_t sign = raw >> 63;
+uint64_t mantissa = (raw >> 52) & ((1ULL << 11) - 1);
+#+END_SRC
+
+Technically undefined behaviour.
+
+BUTT
+
+GCC and friends overrides it and makes it defined.
 
 * Structs - That's about it
 
 Nothing too earth shattering or ground-breaking for structs.
 
-Only like 2 undefined behaviours to keep an eye out for.
+Only like 2-3 undefined behaviours to keep an eye out for.
 
 That's pretty good all things considered.
 
-* Functions - Intro
+* Functions - Outline
+
+
+
 * misc
 
 #+END_SRC
