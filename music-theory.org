@@ -172,6 +172,12 @@ It tends to take the function of adding depth to chords or as a transition note
 
 It's omnipresent because it's very neutral
 
+* Intervals - Beyond the octave
+
+Note that you might see 9th, 11th, etc. intervals
+
+Those are just the continuation of the same pattern
+
 * Intervals - Conclusion
 
 These intervals will act as our vocabulary
@@ -194,7 +200,17 @@ Simple way to describe a chord
 Major chord: 1-3-5
 Minor chord: 1-3b-5
 
+-> The number represents the interval name
+-> If flat, then the interval is minor, else it's major
+
 * Chords - Harmonic Formula
+
+Major chord: 1-3-5
+Minor chord: 1-3b-5
+
+There's only a single semi-tone difference between major and minor chord!
+
+* Chords - Application
 
 To apply the formula:
 
@@ -202,7 +218,7 @@ To apply the formula:
 2. Apply the intervals
 3. Play the Notes
 
-* Chords - Harmonic Formula
+* Chords - Application
 
 C major:
 | 1 | root        | C + 0 | C |
@@ -214,25 +230,28 @@ A minor:
 | 3 | major 3rd   | A + 3 | C |
 | 5 | perfect 5th | A + 7 | E |
 
-* Chords - Harmonic Formula
+* Chords - Disection
 
 The only difference between a Major and Minor chord is one semi-tone
 
 Root: anchors the other notes
 3rd:  gives the chord its flavour
-5th:  adds depth to the chord (it can often be omitted
+5th:  adds depth to the chord (it can often be omitted)
 
-* Chords - Harmonic Formula
+* Chords - Let's Experiment!
 
 You can modify the formula to get different types of chords
 
 |       1-5 | Power chord |
 |   1-3-5-7 | Maj 7th     |
 |  1-3b-5-7 | Min 7th     |
-|     1-4-5 |             |
+|     1-4-5 | Sus         |
 | 1-3-5-7-9 | Maj 9th     |
+|   1-3-5-9 | Add 9th     |
 
-There are ton of these
+There are tons of these. 
+
+Feel free to experiement!
 
 Fancy chords look far less complicated when viewed this way
 
@@ -240,10 +259,272 @@ Fancy chords look far less complicated when viewed this way
 
 And that's it!
 
-* Scales - Note Sequence
+
+* Scales - What is it?
+
+A selection of notes within the octave
+
+That happens to work well together
+
+And has a flavour
+
+* Scales - Common Scales
+
+Major: W-W-H-W-W-W-H
+
+Minor: W-H-W-W-H-W-W
+
+W -> whole-tone or two semi-tones
+H -> half-tone or one semi-tones
+
+* Scales - Common Scales
+
+Major: 2-2-1-2-2-2-1
+
+Minor: 2-1-2-2-1-2-2
+
+My version of it, same thing
+
+* Scales - How To Apply It?
+
+1. Pick a root
+2. Apply the intervals
+
+That's it. 
+
+* Scales - C Major
+
+2-2-1-2-2-2-1
+
+| C | +2 |
+| D | +2 |
+| E | +1 |
+| F | +2 |
+| G | +2 |
+| A | +2 |
+| B | +1 |
+| C |    |
+
+* Scales - A Minor
+
+2-1-2-2-1-2-2
+
+| A | +2 |
+| B | +1 |
+| C | +2 |
+| D | +2 |
+| E | +1 |
+| F | +2 |
+| G | +2 |
+| A |    |
+
+* Scales - Something's odd
+
+C Major: C-D-E-F-G-A-B
+A Minor: A-B-C-D-E-F-G
+
+They're made up of the same notes...
+... but in different order?
+
+And yet one sounds happy and one sounds sad?
+
+* Scales - Intervals
+
+Harmonic Intervals explains the difference:
+
+|    |    | Major       | # |    |    | Minor       |
+|----+----+-------------+---+----+----+-------------|
+|    |  0 | Root        | # |    |  0 | Root        |
+| +2 |  2 | Major 2nd   | # | +2 |  2 | Major 2nd   |
+| +2 |  4 | *Major* 3rd | # | +1 |  3 | *Minor* 3rd |
+| +1 |  5 | Perfect 4th | # | +2 |  5 | Perfect 4th |
+| +2 |  7 | Perfect 5th | # | +2 |  7 | Perfect 5th |
+| +2 |  9 | *Major* 6th | # | +1 |  8 | *Minor* 6th |
+| +2 | 11 | *Major* 7th | # | +2 | 10 | *Minor* 7th |
+| +1 | 12 | Octave      | # | +2 | 12 | Octave      |
+
+* Scales - Lesson
+
+*How notes sound is based on it's relative distance to the root*
+
+*The root is the anchor for everything that comes after it*
+
+* Scales - Lesson
+
+To understand what you're playing, 
+you must  understand the intervals you're playing.
+
+Note names are a tool of communication between musician,
+NOT the end goal of what you're trying to do.
+
+* Scales - Modes
+
+Minor scale is just a rotation of the Major Scale
+
+Minor = rot(Major, 2)
+
+We say that the Minor scale is a MODE of the Major scale
+
+* Scales - Modes
+
+The other rotations/modes are also valid and have names
+
+|  0 | Ionian     | Major |
+| +2 | Dorian     |       |
+| +2 | Phrygian   |       |
+| +1 | Lydian     |       |
+| +2 | Myxolodian |       |
+| +2 | Aolian     | Minor |
+| +2 | Locrian    |       |
+
+Each have slightly different flavours and feel to team
+
+Experiment with them!
+
+* Scales - Off Beat
+
+You don't have to stick to the major scale either!
+
+|   3-2-3-2-2 | Pentatonic   |
+| 3-1-1-3-2-2 | Blues        |
+| 1-4-1-2-1-3 | I made it up |
+|         ... |              |
+
+* Scales - Conclusion
+
+Scales give you a framework to work in
+
+Different notes in a scale have different functions and weight
+
+Straying from your scale can add lots of tension so don't get boxed in
 
 
+* Harmonization
+
+Now that we know how to pick notes that work well together
+
+How do we do it with chords?
+
+And how do we make sure they work well with our melody or bass lines?
 
 
+* Harmonization - Scales
 
+Scales already provides us with notes that work well together
+
+Let's reuse these note to build chords!
+
+* Harmonization - Scales
+
+Simple trick:
+1. Pick a root
+2. Skip a note and pick the next one
+3. Skip a note and pick the next one
+
+We'll abriviate this to:
+
+R-S-P-S-P
+
+R: root
+S: skip
+P: pick
+
+* Harmonization - Scales
+
+| R | C | C |
+| S | D |   |
+| P | E | E |
+| S | F |   |
+| P | G | G |
+|   | A |   |
+|   | B |   |
+
+* Harmonization - Scales
+
+Why does it work?
+
+In 2-2-1-2-2-2-1
+
+Skiping a note will either give you +3 or +4 followed by another +3 or +4
+3 + 4 = 7 which is a perfect 5th
+
+Which means either +4 +3 or +3 +4
+Which is either: 1-3-5 or 1-3b-5
+
+Known as Major or Minor chords
+
+MAGIC!
+
+* Harmonization - Scales
+
+| I   | C-E-G | 1-3-5   | C Major |
+| ii  | D-F-A | 1-3b-5  | D Minor |
+| iii | E-G-B | 1-3b-5  | E Minor |
+| IV  | F-A-C | 1-3-5   | F Major |
+| V   | G-B-D | 1-3-5   | G Major |
+| vi  | A-C-E | 1-3b-5  | A Minor |
+| vii | B-D-F | 1-3b-5b | B dim   |
+
+B dim is the exception and it's known as a tritone: +3 +3
+
+It's the most disconant chord on the major scale
+
+* Harmonization - Scales
+
+You can extend easily!
+
+7th: R-S-P-S-P-S-P
+
+| R | C | C |
+| S | D |   |
+| P | E | E |
+| S | F |   |
+| P | G | G |
+| S | A |   |
+| P | B | B |
+
+* Harmonization - Scales
+
+Sus:  R-P-S-S-P
+7th:  R-S-P-S-P-S-P
+9th:  R-S-P-S-P-S-P-S-P
+11th: R-S-P-S-P-S-P-S-P-S-P
+13th: R-S-P-S-P-S-P-S-P-S-P-S-P
+
+At some point you start running out of fingers
+
+* Harmonization - Four Chord Song
+
+Let's build a simple four chord song
+
+* Harmonization - Four Chord Song
+
+1. Pick a root
+2. Pick a scale
+3. Pick 4 degrees of that scale
+4. Derive The chords
+5. Play the chord in sequence
+6. Play a random melody on the same scale
+7. ...
+8. Untold fame and fortune
+
+* Conclusion
+
+The concepts are pretty simple
+
+Can give you a good foundation for improvisation or composing
+
+Don't be afraid to experiment and go off road
+
+* Conclusion
+
+This is just an introduction
+
+Music goes WAY deeper then this
+
+* Conclusion
+
+Recommended channel for analysis of various popular song 
+
+12tones: https://www.youtube.com/channel/UCTUtqcDkzw7bisadh6AOx5w
 
