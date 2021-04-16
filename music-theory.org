@@ -4,21 +4,25 @@ As understood by a non-musician :)
 
 * Disclaimer
 
-Music Theory is Descriptive not Proscritive
+Music Theory is Descriptive not Prescritive
 
 * Disclaimer
 
-Music Theory is a tool to understand and help write music
+Music Theory is a tool to help understand and write music
 
-It's not a strict set of rules to be adhered to
+It's not a strict set of rules to be adhered to at all cost
 
-If something sounds good, then it sounds good, music theory be damned.
+* Disclaimer
+
+If something sounds good, then it sounds good
+
+Music theory's job is to figure out why.
 
 * Disclaimer
 
 Also I'm not a musician or a music theorist
 
-I pieced this stuff up from various sources
+I pieced this stuff up from various random sources
 
 It's how music makes sense in my brain
 
@@ -26,11 +30,11 @@ Some of the terminology is slightly wrong but I don't care.
 
 * Disclaimer
 
-I've a great many different approaches to explaining music theory
+I've seen a great many different approaches to explaining music theory
 
-Most of it starts with music notation
+Most of it starts with music notation and from scales
 
-I don't do that as I never found it a satisfying way to describing music
+I don't do that as I never found it a satisfying way of describing music
 
 
 * Basics - Octave
@@ -41,13 +45,13 @@ Doubling of a frequency
 
 Concert A is 440hz
 
-220hz and 880hz are both As
+220hz and 880hz are also both As
 
 * Basics - Octave
 
 In western music...
 
-Octaves are split into 12 semi-tone
+Octaves are split into 12 semi-tones
 
 | - | - | - | - | - | - | - | - | - | - | - | - |
 
@@ -76,14 +80,13 @@ b -> flat -> - 1
 
 Why this layout? 
 
-Scales will explain but for now assume it's arbitrary
-
+Scales will explain but for now, assume it's arbitrary
 
 * Basics - Octave
 
 ... and now I want you to forget everyting about those letters ...
 
-THEY'RE NOT IMPORTANT
+*THEY'RE NOT IMPORTANT*
 
 What's important is those 12 notes.
 
@@ -104,9 +107,7 @@ Notes played together is what forms music
 
 The distance between the notes is what gives them flavour
 
-These are called harmonic intervals
-
-(actually I think I have the wrong names but I don't care).
+These are what I call harmonic intervals
 
 * Intervals - Names
 
