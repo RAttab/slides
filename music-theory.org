@@ -32,9 +32,9 @@ Some of the terminology is slightly wrong but I don't care.
 
 I've seen a great many different approaches to explaining music theory
 
-Most of it starts with music notation and from scales
+Most of them start with standard notation and scales
 
-I don't do that as I never found it a satisfying way of describing music
+I take a different approach
 
 
 * Basics - Octave
@@ -51,11 +51,13 @@ Concert A is 440hz
 
 In western music...
 
-Octaves are split into 12 semi-tones
+An octave is split into 12 semi-tones
 
 | - | - | - | - | - | - | - | - | - | - | - | - |
 
 All of which are created equal
+
+Also known as equal temperament
 
 * Basics - Octave
 
@@ -68,8 +70,8 @@ All of which are created equal
 The missing notes are represented with little symbols
 
 #+BEGIN_SRC
-# -> shard -> + 1
-b -> flat -> - 1
+# -> sharp -> +1 semi-tone
+b -> flat  -> -1 semi-tone
 #+END_SRC
 
 | A | A# | B | C | C# | D | D# | E | F | F# | G | G# |
@@ -84,7 +86,9 @@ Scales will explain but for now, assume it's arbitrary
 
 * Basics - Octave
 
-... and now I want you to forget everyting about those letters ...
+Now that we've introduced the letters...
+
+... we'll ignore them ...
 
 *THEY'RE NOT IMPORTANT*
 
@@ -114,32 +118,32 @@ These are what I call harmonic intervals
 The intervals have names to help describe them:
 
 |  # | flavour | Name   |
-|----+---------+--------|
+|----+----------+---------|
 |  0 |         | Unison |
-|----+---------+--------|
+|----+----------+---------|
 |  1 | minor   | 2nd    |
 |  2 | major   | 2nd    |
-|----+---------+--------|
+|----+----------+---------|
 |  3 | minor   | 3rd    |
 |  4 | major   | 3rd    |
-|----+---------+--------|
+|----+----------+---------|
 |  5 | perfect | 4th    |
 |  6 | aug/dim |        |
 |  7 | perfect | 5th    |
-|----+---------+--------|
+|----+----------+---------|
 |  8 | minor   | 6th    |
 |  9 | major   | 6th    |
-|----+---------+--------|
+|----+----------+---------|
 | 10 | minor   | 7th    |
 | 11 | major   | 7th    |
-|----+---------+--------|
+|----+----------+---------|
 | 12 |         | Octave |
 
 * Intervals - Names
 
 The name might feel a bit arbitrary at first and that's ok
 
-Takes time and practice to internalize
+It takes time and practice to internalize
 
 * Intervals - Names
 
@@ -152,16 +156,21 @@ Neither of these really add much flavour
 
 Standard terminology in music:
 
-Minor -> sad
-Major -> happy
+Minor -> Sad
+Major -> Happy
 
-Implies that a minor 3rd is sader and a major 3rd is happy
+Implies that a
+
+Minor 3rd -> Sad
+Major 3rd -> Happy
+
+Same goes for 2nd, 6th and 7th
 
 * Intervals - Names
 
 Perfect is a bit more weird but consider this:
 
-perfect 4th + perfect 5h = Octave
+Perfect 4th + Perfect 5h = Octave
 
 5 + 7 = 12
 
@@ -169,21 +178,26 @@ perfect 4th + perfect 5h = Octave
 
 The Perfect 5th rarely stands out
 
-It tends to take the function of adding depth to chords or as a transition note
+I think of it as adding depth to a chord or as a transition note.
 
 It's omnipresent because it's very neutral
 
 * Intervals - Beyond the octave
 
-Note that you might see 9th, 11th, etc. intervals
+9th, 11th, etc. intervals also exists.
 
-Those are just the continuation of the same pattern
+Theyre' just continuation of the same pattern where but an octave higher
+
+ 9th -> 2nd
+11th -> 3rd
+13th -> 4th
+...
 
 * Intervals - Conclusion
 
 These intervals will act as our vocabulary
 
-Otherwise that's it, nothing too complicated there.
+Otherwise that's it, nothing too complicated here.
 
 
 * Chords - What is it?
@@ -192,7 +206,12 @@ Playing multiple notes at the same time
 
 * Chords - What is it?
 
-Flavour is determined by the intervals that make up the chord
+Chords are made up of notes
+
+Which are made up of intervals
+
+These intervals give the chord its flavour.
+
 
 * Chords - Harmonic Formula
 
@@ -202,7 +221,8 @@ Major chord: 1-3-5
 Minor chord: 1-3b-5
 
 -> The number represents the interval name
--> If flat, then the interval is minor, else it's major
+-> If flat (b): the interval is minor
+-> else: the interval is major
 
 * Chords - Harmonic Formula
 
@@ -237,7 +257,7 @@ The only difference between a Major and Minor chord is one semi-tone
 
 Root: anchors the other notes
 3rd:  gives the chord its flavour
-5th:  adds depth to the chord (it can often be omitted)
+5th:  adds depth to the chord
 
 * Chords - Let's Experiment!
 
@@ -246,7 +266,8 @@ You can modify the formula to get different types of chords
 |       1-5 | Power chord |
 |   1-3-5-7 | Maj 7th     |
 |  1-3b-5-7 | Min 7th     |
-|     1-4-5 | Sus         |
+|     1-2-5 | Sus2        |
+|     1-4-5 | Sus4        |
 | 1-3-5-7-9 | Maj 9th     |
 |   1-3-5-9 | Add 9th     |
 
@@ -263,13 +284,15 @@ And that's it!
 
 * Scales - What is it?
 
-A selection of notes within the octave
+A subset of the notes in an octave
 
 That happens to work well together
 
-And has a flavour
+That together have a certain flavour
 
 * Scales - Common Scales
+
+Two VERY common scales:
 
 Major: W-W-H-W-W-W-H
 
@@ -334,14 +357,14 @@ And yet one sounds happy and one sounds sad?
 Harmonic Intervals explains the difference:
 
 |    |    | Major       | # |    |    | Minor       |
-|----+----+-------------+---+----+----+-------------|
+|----+-----+--------------+----+-----+-----+--------------|
 |    |  0 | Root        | # |    |  0 | Root        |
 | +2 |  2 | Major 2nd   | # | +2 |  2 | Major 2nd   |
-| +2 |  4 | *Major* 3rd | # | +1 |  3 | *Minor* 3rd |
+| +2 |  4 | *Major* 3rd   | # | +1 |  3 | *Minor*   3rd |
 | +1 |  5 | Perfect 4th | # | +2 |  5 | Perfect 4th |
 | +2 |  7 | Perfect 5th | # | +2 |  7 | Perfect 5th |
-| +2 |  9 | *Major* 6th | # | +1 |  8 | *Minor* 6th |
-| +2 | 11 | *Major* 7th | # | +2 | 10 | *Minor* 7th |
+| +2 |  9 | *Major*   6th | # | +1 |  8 | *Minor*   6th |
+| +2 | 11 | *Major*   7th | # | +2 | 10 | *Minor*   7th |
 | +1 | 12 | Octave      | # | +2 | 12 | Octave      |
 
 * Scales - Lesson
@@ -397,8 +420,9 @@ Scales give you a framework to work in
 
 Different notes in a scale have different functions and weight
 
-Straying from your scale can add lots of tension so don't get boxed in
+A "false" note is only one semi-tone away from a "correct" note.
 
+That being said, dissonance adds lots of tension. Don't get boxed in!
 
 * Harmonization
 
@@ -413,7 +437,7 @@ And how do we make sure they work well with our melody or bass lines?
 
 Scales already provides us with notes that work well together
 
-Let's reuse these note to build chords!
+Let's re-use these note to build chords!
 
 * Harmonization - Scales
 
@@ -426,9 +450,9 @@ We'll abriviate this to:
 
 R-S-P-S-P
 
-R: root
-S: skip
-P: pick
+R: Root
+S: Skip
+P: Pick
 
 * Harmonization - Scales
 
@@ -447,14 +471,16 @@ Why does it work?
 In 2-2-1-2-2-2-1
 
 Skiping a note will either give you +3 or +4 followed by another +3 or +4
+
 3 + 4 = 7 which is a perfect 5th
 
-Which means either +4 +3 or +3 +4
-Which is either: 1-3-5 or 1-3b-5
+Which gives us:
 
-Known as Major or Minor chords
++4 then +3    +3 then +4
+  1-3-5         1-3b-5
+  Major         Minor
 
-MAGIC!
+        MAGIC!
 
 * Harmonization - Scales
 
@@ -468,7 +494,7 @@ MAGIC!
 
 B dim is the exception and it's known as a tritone: +3 +3
 
-It's the most disconant chord on the major scale
+It's the most dissonant chord on the Major scale
 
 * Harmonization - Scales
 
@@ -486,7 +512,8 @@ You can extend easily!
 
 * Harmonization - Scales
 
-Sus:  R-P-S-S-P
+Sus2: R-P-S-S-P
+Sus4: R-S-S-P-P
 7th:  R-S-P-S-P-S-P
 9th:  R-S-P-S-P-S-P-S-P
 11th: R-S-P-S-P-S-P-S-P-S-P
@@ -513,7 +540,7 @@ Let's build a simple four chord song
 
 The concepts are pretty simple
 
-Can give you a good foundation for improvisation or composing
+Can give you a good foundation for improvisation, composing or analyzing
 
 Don't be afraid to experiment and go off road
 
@@ -525,7 +552,8 @@ Music goes WAY deeper then this
 
 * Conclusion
 
-Recommended channel for analysis of various popular song 
+Recommended channel for analysis of various popular song
 
 12tones: https://www.youtube.com/channel/UCTUtqcDkzw7bisadh6AOx5w
 
+Also has a crazy video on the history of Concert A
