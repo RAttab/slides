@@ -1,0 +1,539 @@
+* C++: Pointers, References & RAII
+
+
+* Pointers
+
+The premiere way of shooting yourself in the foot!
+
+
+* Pointers - What are they?
+
+A variable that holds the address of another variable
+
+#+BEGIN_SRC cpp
+  int x = 0;
+  int *p = &x;
+
+  *p = 10;
+  assert(x == 10);
+
+  x = 20;
+  assert(*p == 20);
+#+END_SRC
+
+
+* Pointers - What are they for?
+
+Passing around values that are too expensive to copy
+
+#+BEGIN_SRC cpp
+  struct bob_the_large_struct { /* ... */ } x;
+
+  do_a_thing(&x);
+#+END_SRC
+
+
+* Pointers - What are they for?
+
+Referencing heap allocated values
+
+#+BEGIN_SRC cpp
+  struct bob_the_heap_struct { /* ... */ };
+
+  my_heap_struct *p = new bob_the_heap_struct;
+#+END_SRC
+
+
+* Pointers - Stack?
+
+Where all variables in a functions are placed
+
+Very fast to allocate and is freed automatically on scope exit
+
+Entirely managed by the compiler but limited to ~2Mb
+
+#+BEGIN_SRC cpp
+  void bob_the_function() {
+      int x = 0;
+      int *p = &x;
+   }
+#+END_SRC
+
+
+* Pointers - Stack!
+
+Returning a pointer to a stack allocated variable is bad joo-joo
+
+#+BEGIN_SRC cpp
+  int *bob_the_better_function() {
+    int x = 0;
+    return &x;
+  }
+
+  int *p = bob_the_better_function();
+  *p = 10;
+#+END_SRC
+
+
+* Pointers - Heap?
+
+Memory allocated manually outside of the stack
+
+There's a cost to allocating and must be freed manually
+
+Allocation limit is whatever your computer can manage
+
+#+BEGIN_SRC cpp
+  int *p = new int;
+  *p = 10;
+  delete p;
+#+END_SRC
+
+
+* Pointers - Heap!
+
+No tied to a scope so can be passed around without issue
+
+#+BEGIN_SRC cpp
+  int *bob_the_even_better_function() {
+      int *p = new int;
+      return p;
+  }
+
+  int *p = bob_the_even_better_function();
+  *p = 10;
+  delete p;
+#+END_SRC
+
+
+* Pointers - Stack + Heap = Stheap
+
+For systems programming, knowing here things are stored is important
+
+Stack vs Heap is a decision you have to make for every variable
+
+Making the right decision will have a tremendous impact on performance
+
+
+* Pointers - Bad Pointers! BAD!
+
+Can be NULL
+
+#+BEGIN_SRC cpp
+  int *p = nullptr;
+  *p = 10; // Segfault
+#+END_SRC
+
+
+* Pointers - Bad Pointers! BAD!
+
+Can exceed the lifetime of the object it points to
+
+#+BEGIN_SRC cpp
+  int *p = nullptr;
+
+  {
+      int x = 0;
+      p = &x;
+  }
+
+  int y = 10;
+  *x = 20; // ???
+#+END_SRC
+
+
+* References
+
+* (L-Value) References
+
+Correct name but we'll get back to that later.
+
+
+* References - What are they?
+
+A variable that holds the address of another variable
+
+#+BEGIN_SRC cpp
+  int x = 0;
+  int &r = x;
+
+  r = 10;
+  assert(x == 10);
+
+  x = 20;
+  assert(r == 20);
+#+END_SRC
+
+* References - What's the Difference?
+
+Is *ALWAYS* bound to a variable
+
+#+BEGIN_SRC cpp
+  int x = 0;
+  int &r; // Error
+#+END_SRC
+
+
+* References - What's the Difference?
+
+The binding is *PERMANENT*
+
+#+BEGIN_SRC cpp
+  int x = 0;
+  int &r = x;
+
+  int y = 10
+  r = y;
+  assert(x == y);
+#+END_SRC
+
+There's no syntax to change what a reference points to.
+
+* References - So what?
+
+References always point to valid memory*
+
+
+* References - Hey I saw that asterisk!
+
+Returning a reference to a temporary variable is possible
+
+#+BEGIN_SRC cpp
+  int& bob_the_mischievous_function() {
+      int x = 0;
+      return x;
+  }
+
+  int &r = bob_the_mischievous_function();
+  r = 10; // Nothing good
+#+END_SRC
+
+Compilers are pretty good at detecting this nowadays
+
+
+* References - When to use them?
+
+They're strictly safer then pointers
+
+Use them instead of pointers whenever possible
+
+
+* R-Value References
+
+
+* R-Value References - Heuh?
+
+R-Values and L-Values references the side of the equal sign
+
+#+BEGIN_SRC cpp
+Left = Right
+#+END_SRC
+
+
+* R-Value References - L-Value
+
+Left side of the equation
+
+Is a definitive memory location
+
+Has a name bound to it
+
+
+* R-Value References - R-Value
+
+Right side of the equation
+
+Is a temporary value that results of a computation
+
+Does not have a name bound to it
+
+
+* R-Value References - What are they?
+
+A reference to a temporary value
+
+#+BEGIN_SRC cpp
+  void bob_the_invalid_function(int &x) { /* ... */  }
+  bob_the_invalid_function(10); // Error
+
+  void bob_the_confusing_function(int &&x) { /* ... */  }
+  bob_the_confusing_function(10);
+#+END_SRC
+
+Only ever used in function arguments
+
+
+* R-Value References - You lost me...
+
+Used to indicate that an object should be *moved*
+
+
+* R-Value References - Copy vs Move
+
+Copy: copy the content of an object so that both are *equal*
+
+Move: move the content of an object leaving the original *empty* but *valid*
+
+
+* R-Value References - Baby steps...
+
+#+BEGIN_SRC cpp
+  std::vector<int> x = {1, 2, 3, 4, 5};
+
+  std::vector<int> a = x;
+  assert(x == a);
+
+  std::vector<int> b = std::move(x);
+  assert(x.size() == 0 && b.size() == 5);
+#+END_SRC
+
+
+* R-Value References - std::move?
+
+Converts it's argument into an R-Value reference
+
+Indicates that we want the object to be moved and not copied.
+
+
+* R-Value References - Copy
+
+#+BEGIN_SRC cpp
+  struct bob_the_copy {
+      int x = 0;
+
+      bob_the_copy(const bob_the_copy &other) = default;
+      bob_the_copy& operator= (const bob_the_copy &other) = default;
+  };
+
+  bob_the_copy a(10);
+  bob_the_copy b(a);
+  assert(a == b);
+
+  a.x = 20;
+  b = a;
+  assert(a == b);
+#+END_SRC
+
+
+* R-Value References - Move
+
+#+BEGIN_SRC cpp
+  struct bob_the_moved {
+      HANDLE resource;
+
+      explicit bob_the_moved(HANDLE resourse) : resource(resource) {}
+
+      bob_the_moved(bob_the_moved &&other) : resource(other.resource) {
+          other.resource = INVALID_HANDLE;
+      }
+
+      bob_the_moved& operator= (bob_the_moved &&other) {
+          resource = other.resource;
+          other.resource = INVALID_HANDLE;
+          return *this;
+      }
+
+      operator bool() const { return resource != INVALID_HANDLE; }
+  };
+#+END_SRC
+
+
+* R-Value References - Move II - Electric Boogaloo
+
+#+BEGIN_SRC cpp
+  struct bob_the_moved { /* ... */ };
+
+  bob_the_moved a(/* ... */);
+
+  bob_the_moved b(std::move(a));
+  assert(!a && b);
+
+  bob_the_moved c(INVALID_HANDLE);
+  c = b;
+  assert(!a && !b && c);
+#+END_SRC
+
+
+* R-Value References - When to use them?
+
+Whenever you're handling data that should not be copied implicitly
+
+Or when it's more efficient to move the data then copy it
+
+
+* R-Value References - Usage Example
+
+#+BEGIN_SRC cpp
+  struct bob_the_string {
+      std::string x;
+      bob_the_string(std::string x) : x(std::move(x)) {}
+  };
+
+  {
+      std::string a_long_long_long_long_string = /* ... */ ;
+      return bob_the_string(std::move(a_long_long_long_long_string));
+  }
+#+END_SRC
+
+Since we're returning, there's no need to keep a copy of the string around
+
+So we move it for efficiency reason
+
+
+* R-Value References - What about the other use case?
+
+For data that should not be copied willy-nilly...
+
+
+* Ressource Allocation Is Initialization (RAII)
+
+
+* Ressource Allocation Is Initialization (RAII)
+
+The C++ community is real good at naming things
+
+
+* Bonus - C++ Community Naming
+
+SFINAE: Substitution Failure Is Not An Error
+
+The Most Vexing Parse
+
+
+* RAII - What is it?
+
+When a resource is allocated
+
+It should be captured by a constructor
+
+And freed by the associated destructor
+
+Similar to *using* in python
+
+
+* RAII - Baby Steps
+
+#+BEGIN_SRC cpp
+  struct bob_the_raii
+  {
+      bob_the_raii(bob_the_struct *ptr) : ptr(ptr) {}
+      ~bob_the_raii() { delete ptr; }
+
+      bob_the_raii(const bob_the_raii &other) = delete;
+      bob_the_raii& operator= (const bob_the_raii &other) = delete;
+
+      bob_the_struct *ptr;
+  };
+
+  {
+      bob_the_raii raii{ new bob_the_struct{10} };
+      do_a_thing(raii.ptr);
+  }
+#+END_SRC
+
+
+* RAII - std::unique_ptr
+
+#+BEGIN_SRC cpp
+  std::unique_ptr<bob_the_struct> ptr = std::make_unique<bob_the_struct>(10);
+
+  ptr->value = 20;
+  int x = *ptr;
+
+  auto copied = ptr;                 // ERROR
+  auto moved = std::move(ptr); // OK
+#+END_SRC
+
+
+* RAII - std::shared_ptr
+
+Uses atomic reference counting to call delete
+
+#+BEGIN_SRC cpp
+  std::shared_ptr<bob_the_struct> ptr = std::make_shared<bob_the_struct>(10);
+
+  ptr->value = 20;
+  int x = *ptr;
+
+  auto copied = ptr;                 // reference count incremented
+  auto moved = std::move(ptr); // reference count not incremented
+#+END_SRC
+
+
+* RAII - Why use this?
+
+Ties a resource's lifetime to a given scope
+
+Removes the burden of manually freeing resources
+
+
+* RAII - The Sky is the Limit!
+
+#+BEGIN_SRC cpp
+  std::mutex bob_the_mutex;
+
+  {
+      // will lock the mutex on construction
+      std::lock_guard guard{bob_the_mutex};
+
+      do_a_thing();
+
+  } // mutex is unlocked on destruction
+#+END_SRC
+
+
+* RAII - This Is Real Life Folks!
+
+#+BEGIN_SRC cpp
+  {
+
+      (void) getaddrinfo(/* ... */, &list);
+      auto exit = on_scope_exit([=] { freeaddrinfo(list); });
+
+      for (struct addrinfo *it = list; it; it = it->ai_next) {
+          do_a_thing(it);
+      }
+
+  } // the on_scope_exit lambda is called here which frees list
+#+END_SRC
+
+
+* RAII - Feel The Enlightment!
+
+If used deligently, memory leaks are a non-issue
+
+You should have no *new*, *delete*, *malloc*, *free* in your code ever
+
+Corner Stone of Modern C++
+
+
+* Universal Reference
+
+* Universal Reference - Whaaaa?
+
+IF you're in a template function
+
+AND one of your parameter is passed through
+
+THEN it should be a universal reference
+
+
+* Universal Reference - ... sure bud... whatever you say...
+
+#+BEGIN_SRC cpp
+  template <typename Fn>
+  scope_exit<Fn> on_scope_exit(Fn &&fn)
+  {
+    return scope_exit<Fn>(std::forward<Fn>(fn));
+  }
+#+END_SRC
+
+
+* Universal Reference - Simplified
+
+IF you're writing a template function
+
+THEN ask Remi
+
+
+* FIN
