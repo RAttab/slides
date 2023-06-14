@@ -1,9 +1,22 @@
 * C++: Pointers, References & RAII
 
 
+* Quotes Makes You Sound Smurt
+
+Pointers are real. They’re what the hardware understands. Somebody has to deal
+with them. You can’t just place a LISP book on top of an x86 chip and hope that
+the hardware learns about lambda calculus by osmosis. Denying the existence of
+pointers is like living in ancient Greece and denying the existence of Krackens
+and then being confused about why none of your ships ever make it to Morocco, or
+Ur-Morocco, or whatever Morocco was called back then. Pointers are like Krackens
+— real, living things that must be dealt with so that polite society can exist.
+
+-- James Mickens
+
+
 * Pointers
 
-The premiere way of shooting yourself in the foot!
+The premium method for shooting yourself in the foot!
 
 
 * Pointers - What are they?
@@ -40,7 +53,9 @@ Referencing heap allocated values
 #+BEGIN_SRC cpp
   struct bob_the_heap_struct { /* ... */ };
 
-  my_heap_struct *p = new bob_the_heap_struct;
+  bob_the_heap_struct *p = new bob_the_heap_struct;
+  do_a_thing(p);
+  delete p;
 #+END_SRC
 
 
@@ -65,12 +80,12 @@ Entirely managed by the compiler but limited to ~2Mb
 Returning a pointer to a stack allocated variable is bad joo-joo
 
 #+BEGIN_SRC cpp
-  int *bob_the_better_function() {
+  int *bob_the_bad_function() {
     int x = 0;
     return &x;
   }
 
-  int *p = bob_the_better_function();
+  int *p = bob_the_bad_function();
   *p = 10;
 #+END_SRC
 
@@ -95,12 +110,12 @@ Allocation limit is whatever your computer can manage
 No tied to a scope so can be passed around without issue
 
 #+BEGIN_SRC cpp
-  int *bob_the_even_better_function() {
+  int *bob_the_better_function() {
       int *p = new int;
       return p;
   }
 
-  int *p = bob_the_even_better_function();
+  int *p = bob_the_better_function();
   *p = 10;
   delete p;
 #+END_SRC
@@ -108,7 +123,7 @@ No tied to a scope so can be passed around without issue
 
 * Pointers - Stack + Heap = Stheap
 
-For systems programming, knowing here things are stored is important
+For systems programming, knowing where things are stored is important
 
 Stack vs Heap is a decision you have to make for every variable
 
@@ -138,7 +153,7 @@ Can exceed the lifetime of the object it points to
   }
 
   int y = 10;
-  *x = 20; // ???
+  *p = 20; // ???
 #+END_SRC
 
 
@@ -169,7 +184,6 @@ A variable that holds the address of another variable
 Is *ALWAYS* bound to a variable
 
 #+BEGIN_SRC cpp
-  int x = 0;
   int &r; // Error
 #+END_SRC
 
@@ -199,7 +213,7 @@ References always point to valid memory*
 Returning a reference to a temporary variable is possible
 
 #+BEGIN_SRC cpp
-  int& bob_the_mischievous_function() {
+  int &bob_the_mischievous_function() {
       int x = 0;
       return x;
   }
@@ -256,8 +270,11 @@ A reference to a temporary value
   void bob_the_invalid_function(int &x) { /* ... */  }
   bob_the_invalid_function(10); // Error
 
-  void bob_the_confusing_function(int &&x) { /* ... */  }
-  bob_the_confusing_function(10);
+  void bob_the_acceptable_function(const int &x) { /* ... */ }
+  bob_the_acceptable_function(10); // Ok but not mutable
+
+  void bob_the_confusing_function(int &&x) { /* ... */ }
+  bob_the_confusing_function(10); // Works!
 #+END_SRC
 
 Only ever used in function arguments
@@ -265,14 +282,14 @@ Only ever used in function arguments
 
 * R-Value References - You lost me...
 
-Used to indicate that an object should be *moved*
+Used to indicate that an object should be *MOVED*
 
 
 * R-Value References - Copy vs Move
 
-Copy: copy the content of an object so that both are *equal*
+Copy: copy the content of an object so that both are *EQUAL*
 
-Move: move the content of an object leaving the original *empty* but *valid*
+Move: move the content of an object leaving the original *EMPTY* but *VALID*
 
 
 * R-Value References - Baby steps...
@@ -305,13 +322,13 @@ Indicates that we want the object to be moved and not copied.
       bob_the_copy& operator= (const bob_the_copy &other) = default;
   };
 
-  bob_the_copy a(10);
-  bob_the_copy b(a);
-  assert(a == b);
+  bob_the_copy a{10};
+  bob_the_copy b{a};
+  assert(a.x == b.x);
 
   a.x = 20;
   b = a;
-  assert(a == b);
+  assert(a.x == b.x);
 #+END_SRC
 
 
@@ -341,14 +358,13 @@ Indicates that we want the object to be moved and not copied.
 * R-Value References - Move II - Electric Boogaloo
 
 #+BEGIN_SRC cpp
-  struct bob_the_moved { /* ... */ };
+  bob_the_moved a{/* ... */};
+  assert(a);
 
-  bob_the_moved a(/* ... */);
-
-  bob_the_moved b(std::move(a));
+  bob_the_moved b{std::move(a)};
   assert(!a && b);
 
-  bob_the_moved c(INVALID_HANDLE);
+  bob_the_moved c{INVALID_HANDLE};
   c = b;
   assert(!a && !b && c);
 #+END_SRC
@@ -365,22 +381,16 @@ Or when it's more efficient to move the data then copy it
 
 #+BEGIN_SRC cpp
   struct bob_the_string {
-      std::string x;
-      bob_the_string(std::string x) : x(std::move(x)) {}
+      std::string str;
+      explicit bob_the_string(std::string &&x) : str{x} {}
   };
 
-  {
-      std::string a_long_long_long_long_string = /* ... */ ;
-      return bob_the_string(std::move(a_long_long_long_long_string));
-  }
+  std::string a_long_long_long_long_string = /* ... */ ;
+  bob_the_string s{std::move(a_long_long_long_long_string)};
 #+END_SRC
 
-Since we're returning, there's no need to keep a copy of the string around
 
-So we move it for efficiency reason
-
-
-* R-Value References - What about the other use case?
+* What about the other use case?
 
 For data that should not be copied willy-nilly...
 
@@ -390,10 +400,7 @@ For data that should not be copied willy-nilly...
 
 * Ressource Allocation Is Initialization (RAII)
 
-The C++ community is real good at naming things
-
-
-* Bonus - C++ Community's Name For Things
+The C++ community is real good at naming things:
 
 SFINAE: Substitution Failure Is Not An Error
 
@@ -402,11 +409,11 @@ The Most Vexing Parse
 
 * RAII - What is it?
 
-When a resource is allocated
+When a resource is allocated...
 
-It should be captured by a constructor
+... it should be captured by a constructor..
 
-And freed by the associated destructor
+... and freed by the associated destructor.
 
 Similar to *using* in python
 
@@ -438,9 +445,9 @@ Similar to *using* in python
   std::unique_ptr<bob_the_struct> ptr = std::make_unique<bob_the_struct>(10);
 
   ptr->value = 20;
-  int x = *ptr;
+  bob_the_struct x = *ptr;
 
-  auto copied = ptr;                 // ERROR
+  auto copied = ptr;           // ERROR
   auto moved = std::move(ptr); // OK
 #+END_SRC
 
@@ -453,9 +460,9 @@ Uses atomic reference counting to call delete
   std::shared_ptr<bob_the_struct> ptr = std::make_shared<bob_the_struct>(10);
 
   ptr->value = 20;
-  int x = *ptr;
+  bob_the_struct x = *ptr;
 
-  auto copied = ptr;                 // reference count incremented
+  auto copied = ptr;           // reference count incremented
   auto moved = std::move(ptr); // reference count not incremented
 #+END_SRC
 
@@ -488,13 +495,11 @@ Works even when exceptions are thrown!
 
 #+BEGIN_SRC cpp
   {
-
       (void) getaddrinfo(/* ... */, &list);
       auto exit = on_scope_exit([=] { freeaddrinfo(list); });
 
-      for (struct addrinfo *it = list; it; it = it->ai_next) {
+      for (struct addrinfo *it = list; it; it = it->ai_next)
           do_a_thing(it);
-      }
 
   } // the on_scope_exit lambda is called here which frees list
 #+END_SRC
@@ -515,9 +520,9 @@ Corner Stone of Modern C++
 
 *IF* you're in a template function
 
-*AND* one of your parameter is parameterized by the template
+*AND* one of your parameter is a reference parameterized by the template
 
-*THEN* the parameter should be a universal reference
+*THEN* the reference should be a universal reference
 
 
 * Universal Reference - ... sure bud... whatever you say...
@@ -526,7 +531,7 @@ Corner Stone of Modern C++
   template <typename Fn>
   scope_exit<Fn> on_scope_exit(Fn &&fn)
   {
-    return scope_exit<Fn>(std::forward<Fn>(fn));
+      return scope_exit<Fn>(std::forward<Fn>(fn));
   }
 #+END_SRC
 
@@ -535,7 +540,7 @@ Corner Stone of Modern C++
 
 *IF* you're writing a template function
 
-*THEN* ask Remi
+*THEN* ask Bob
 
 
 * FIN
